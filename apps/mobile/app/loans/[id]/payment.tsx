@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import CurrencyInput from '../../../src/components/CurrencyInput';
+import { theme } from '../../../src/theme';
 
 export default function PaymentScreen() {
   const { id } = useLocalSearchParams();
@@ -31,16 +32,23 @@ export default function PaymentScreen() {
     }, 1000);
   };
 
+  const paymentMethods = [
+    { key: 'cash', label: 'Cash' },
+    { key: 'mobile_money', label: 'Mobile Money' },
+    { key: 'bank_transfer', label: 'Bank Transfer' },
+    { key: 'other', label: 'Other' },
+  ];
+
   return (
-    <View className="flex-1 bg-gray-50 p-6">
-      <Text className="text-2xl font-bold mb-6">
+    <View style={styles.container}>
+      <Text style={styles.title}>
         {t('loans.payment.title')}
       </Text>
       
-      <View className="bg-white rounded-lg p-4 shadow-sm">
+      <View style={styles.card}>
         {/* Amount */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.payment.amount')}
           </Text>
           <CurrencyInput
@@ -50,27 +58,27 @@ export default function PaymentScreen() {
         </View>
         
         {/* Payment Method */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.payment.method')}
           </Text>
-          <View className="flex-row flex-wrap">
-            {['cash', 'mobile_money', 'bank_transfer', 'other'].map((m) => (
+          <View style={styles.methodContainer}>
+            {paymentMethods.map((m) => (
               <TouchableOpacity
-                key={m}
-                className={`border rounded-lg px-4 py-2 mr-2 mb-2 ${
-                  method === m
-                    ? 'bg-primary-500 border-primary-500'
-                    : 'border-gray-300'
-                }`}
-                onPress={() => setMethod(m)}
+                key={m.key}
+                style={[
+                  styles.methodButton,
+                  method === m.key && styles.selectedMethodButton,
+                ]}
+                onPress={() => setMethod(m.key)}
               >
                 <Text
-                  className={
-                    method === m ? 'text-white' : 'text-gray-700'
-                  }
+                  style={[
+                    styles.methodText,
+                    method === m.key && styles.selectedMethodText,
+                  ]}
                 >
-                  {m.replace('_', ' ')}
+                  {m.label}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -78,12 +86,12 @@ export default function PaymentScreen() {
         </View>
         
         {/* Note */}
-        <View className="mb-6">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.payment.note')}
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg p-4 h-24"
+            style={styles.textArea}
             placeholder={t('loans.payment.note')}
             multiline
             textAlignVertical="top"
@@ -94,11 +102,11 @@ export default function PaymentScreen() {
         
         {/* Submit Button */}
         <TouchableOpacity
-          className={`bg-primary-500 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleRecordPayment}
           disabled={loading}
         >
-          <Text className="text-white text-center font-bold text-lg">
+          <Text style={styles.buttonText}>
             {loading ? t('common.loading') : t('loans.payment.submit')}
           </Text>
         </TouchableOpacity>
@@ -106,3 +114,80 @@ export default function PaymentScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    marginBottom: theme.spacing.xxl,
+    color: theme.colors.text,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadow.md,
+  },
+  inputGroup: {
+    marginBottom: theme.spacing.xxl,
+  },
+  label: {
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+    fontWeight: 'medium',
+  },
+  methodContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  methodButton: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    marginRight: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  selectedMethodButton: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  methodText: {
+    color: theme.colors.text,
+    fontSize: theme.fontSize.md,
+  },
+  selectedMethodText: {
+    color: theme.colors.textInverse,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    height: 96,
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    textAlignVertical: 'top',
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+});

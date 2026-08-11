@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import EmptyState from '../../src/components/EmptyState';
+import { theme } from '../../src/theme';
 
 export default function ActivityScreen() {
   const { t } = useTranslation();
@@ -35,28 +36,34 @@ export default function ActivityScreen() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-gray-50 p-6">
-      <Text className="text-2xl font-bold mb-6">
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>
         {t('activity.title')}
       </Text>
       
       {/* Recent Payments */}
-      <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-        <Text className="text-lg font-bold mb-4">
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
           {t('activity.payments')}
         </Text>
         
         {recentPayments.length > 0 ? (
-          <View className="space-y-3">
-            {recentPayments.map((payment) => (
-              <View key={payment.id} className="flex-row justify-between items-center border-b border-gray-100 pb-3">
-                <View>
-                  <Text className="font-medium">{payment.borrower}</Text>
-                  <Text className="text-gray-500 text-sm">{payment.date}</Text>
+          <View style={styles.timeline}>
+            {recentPayments.map((payment, index) => (
+              <View key={payment.id} style={styles.timelineItem}>
+                <View style={styles.timelineDot} />
+                {index < recentPayments.length - 1 && (
+                  <View style={styles.timelineLine} />
+                )}
+                <View style={styles.timelineContent}>
+                  <View style={styles.paymentInfo}>
+                    <Text style={styles.paymentBorrower}>{payment.borrower}</Text>
+                    <Text style={styles.paymentDate}>{payment.date}</Text>
+                  </View>
+                  <Text style={styles.paymentAmount}>
+                    {payment.amount.toLocaleString()} XOF
+                  </Text>
                 </View>
-                <Text className="font-medium">
-                  {payment.amount.toLocaleString()} XOF
-                </Text>
               </View>
             ))}
           </View>
@@ -69,28 +76,34 @@ export default function ActivityScreen() {
       </View>
       
       {/* Reminders */}
-      <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-        <Text className="text-lg font-bold mb-4">
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
           {t('activity.reminders')}
         </Text>
         
         {reminders.length > 0 ? (
-          <View className="space-y-3">
-            {reminders.map((reminder) => (
-              <View key={reminder.id} className="flex-row justify-between items-center border-b border-gray-100 pb-3">
-                <View>
-                  <Text className="font-medium">{reminder.borrower}</Text>
-                  <Text className="text-gray-500 text-sm">
-                    {t('dashboard.nextDue')}: {reminder.dueDate}
-                  </Text>
-                </View>
-                <View className="items-end">
-                  <Text className="font-medium text-danger-500">
-                    {reminder.amount.toLocaleString()} XOF
-                  </Text>
-                  <Text className="text-danger-500 text-sm">
-                    {reminder.overdueDays} days overdue
-                  </Text>
+          <View style={styles.timeline}>
+            {reminders.map((reminder, index) => (
+              <View key={reminder.id} style={styles.timelineItem}>
+                <View style={[styles.timelineDot, styles.timelineDotWarning]} />
+                {index < reminders.length - 1 && (
+                  <View style={styles.timelineLine} />
+                )}
+                <View style={styles.timelineContent}>
+                  <View style={styles.reminderInfo}>
+                    <Text style={styles.reminderBorrower}>{reminder.borrower}</Text>
+                    <Text style={styles.reminderDate}>
+                      {t('dashboard.nextDue')}: {reminder.dueDate}
+                    </Text>
+                  </View>
+                  <View style={styles.reminderAmountContainer}>
+                    <Text style={styles.reminderAmount}>
+                      {reminder.amount.toLocaleString()} XOF
+                    </Text>
+                    <Text style={styles.reminderOverdue}>
+                      {reminder.overdueDays} days overdue
+                    </Text>
+                  </View>
                 </View>
               </View>
             ))}
@@ -105,3 +118,107 @@ export default function ActivityScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xxl,
+  },
+  section: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.xxl,
+    ...theme.shadow.md,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.lg,
+  },
+  timeline: {
+    gap: theme.spacing.lg,
+  },
+  timelineItem: {
+    flexDirection: 'row',
+    position: 'relative',
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.primary,
+    zIndex: 1,
+    marginTop: theme.spacing.xs,
+  },
+  timelineDotWarning: {
+    backgroundColor: theme.colors.error,
+  },
+  timelineLine: {
+    position: 'absolute',
+    left: 5,
+    top: 12,
+    width: 2,
+    height: '100%',
+    backgroundColor: theme.colors.border,
+  },
+  timelineContent: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginLeft: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
+  },
+  paymentInfo: {
+    flex: 1,
+  },
+  paymentBorrower: {
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  paymentDate: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  paymentAmount: {
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+    color: theme.colors.text,
+  },
+  reminderInfo: {
+    flex: 1,
+  },
+  reminderBorrower: {
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
+  },
+  reminderDate: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+  },
+  reminderAmountContainer: {
+    alignItems: 'flex-end',
+  },
+  reminderAmount: {
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+    color: theme.colors.error,
+    marginBottom: theme.spacing.xs,
+  },
+  reminderOverdue: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.error,
+  },
+});

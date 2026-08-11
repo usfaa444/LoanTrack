@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
-import { Slot } from 'expo-router';
+import React from 'react';
+import { Slot, Stack } from 'expo-router';
 import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuthStore } from '../src/stores/authStore';
+import { StatusBar } from 'expo-status-bar';
 import '../global.css';
 import '../src/i18n';
 
@@ -24,6 +24,7 @@ export default function RootLayout() {
       client={queryClient}
       persistOptions={{ persister: asyncPersister }}
     >
+      <StatusBar style="dark" />
       <Slot />
     </PersistQueryClientProvider>
   );

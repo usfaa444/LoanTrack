@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../../src/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function ProfileSetupScreen() {
   const [name, setName] = useState('');
@@ -39,20 +41,26 @@ export default function ProfileSetupScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white p-6 justify-center">
-      <Text className="text-2xl font-bold text-center mb-2">
+    <View style={styles.container}>
+      <MaterialIcons 
+        name="account-circle" 
+        size={80} 
+        color={theme.colors.border} 
+        style={styles.avatarIcon} 
+      />
+      <Text style={styles.title}>
         {t('auth.profile.title')}
       </Text>
-      <Text className="text-gray-600 text-center mb-8">
+      <Text style={styles.subtitle}>
         {t('auth.profile.namePlaceholder')}
       </Text>
       
-      <View className="mb-6">
-        <Text className="text-gray-700 mb-2 font-medium">
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
           {t('auth.profile.name')}
         </Text>
         <TextInput
-          className="border border-gray-300 rounded-lg p-4 text-lg"
+          style={styles.input}
           placeholder={t('auth.profile.namePlaceholder')}
           value={name}
           onChangeText={setName}
@@ -60,24 +68,89 @@ export default function ProfileSetupScreen() {
         />
       </View>
       
-      <View className="mb-6">
-        <Text className="text-gray-700 mb-2 font-medium">
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
           {t('auth.profile.currency')}
         </Text>
-        <View className="border border-gray-300 rounded-lg p-4 bg-gray-100">
-          <Text className="text-lg">XOF (Franc CFA)</Text>
+        <View style={[styles.input, styles.disabledInput]}>
+          <Text style={styles.currencyText}>XOF (Franc CFA)</Text>
         </View>
       </View>
       
       <TouchableOpacity
-        className={`bg-primary-500 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
+        style={[styles.button, loading && styles.buttonDisabled]}
         onPress={handleSaveProfile}
         disabled={loading}
       >
-        <Text className="text-white text-center font-bold text-lg">
+        <Text style={styles.buttonText}>
           {loading ? t('common.loading') : t('common.save')}
         </Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarIcon: {
+    marginBottom: theme.spacing.xxl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: theme.fontSize.lg,
+    textAlign: 'center',
+    marginBottom: theme.spacing.huge,
+    color: theme.colors.textSecondary,
+  },
+  inputGroup: {
+    width: '100%',
+    marginBottom: theme.spacing.xxl,
+  },
+  label: {
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+    fontWeight: 'medium',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text,
+  },
+  disabledInput: {
+    backgroundColor: theme.colors.backgroundAlt,
+  },
+  currencyText: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text,
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.lg,
+    width: '100%',
+    alignItems: 'center',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+});

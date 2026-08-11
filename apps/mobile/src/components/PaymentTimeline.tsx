@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { theme } from '../theme';
 
 interface Payment {
   id: string;
@@ -15,28 +16,28 @@ interface PaymentTimelineProps {
 
 export default function PaymentTimeline({ payments }: PaymentTimelineProps) {
   const renderPaymentItem = ({ item }: { item: Payment }) => (
-    <View className="flex-row py-3">
-      <View className="items-center mr-3">
-        <View className="w-3 h-3 rounded-full bg-primary-500 mb-1" />
-        <View className="w-0.5 flex-1 bg-gray-300" />
+    <View style={styles.timelineItem}>
+      <View style={styles.timelineIndicator}>
+        <View style={styles.timelineDot} />
+        <View style={styles.timelineLine} />
       </View>
       
-      <View className="flex-1 pb-3">
-        <View className="flex-row justify-between">
-          <Text className="font-bold">
+      <View style={styles.paymentContent}>
+        <View style={styles.paymentHeader}>
+          <Text style={styles.amountText}>
             {item.amount.toLocaleString()} XOF
           </Text>
-          <Text className="text-gray-500">
+          <Text style={styles.dateText}>
             {item.date}
           </Text>
         </View>
         
-        <Text className="text-gray-600">
+        <Text style={styles.methodText}>
           {item.method}
         </Text>
         
         {item.note ? (
-          <Text className="text-gray-500 mt-1">
+          <Text style={styles.noteText}>
             {item.note}
           </Text>
         ) : null}
@@ -50,9 +51,65 @@ export default function PaymentTimeline({ payments }: PaymentTimelineProps) {
       renderItem={renderPaymentItem}
       keyExtractor={(item) => item.id}
       showsVerticalScrollIndicator={false}
-      ListFooterComponent={
-        <View className="w-3 h-3 rounded-full bg-gray-300 self-center mt-1" />
-      }
+      ListFooterComponent={<View style={styles.footerDot} />}
     />
   );
 }
+
+const styles = StyleSheet.create({
+  timelineItem: {
+    flexDirection: 'row',
+    paddingVertical: theme.spacing.md,
+  },
+  timelineIndicator: {
+    alignItems: 'center',
+    marginRight: theme.spacing.md,
+  },
+  timelineDot: {
+    width: 12,
+    height: 12,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  timelineLine: {
+    width: 1,
+    flex: 1,
+    backgroundColor: theme.colors.border,
+  },
+  paymentContent: {
+    flex: 1,
+    paddingBottom: theme.spacing.md,
+  },
+  paymentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.xs,
+  },
+  amountText: {
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    fontSize: theme.fontSize.md,
+  },
+  dateText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.md,
+  },
+  methodText: {
+    color: theme.colors.text,
+    fontSize: theme.fontSize.md,
+  },
+  noteText: {
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.md,
+  },
+  footerDot: {
+    width: 12,
+    height: 12,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.border,
+    alignSelf: 'center',
+    marginTop: theme.spacing.xs,
+  },
+});

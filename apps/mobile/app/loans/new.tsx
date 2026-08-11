@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import CurrencyInput from '../../src/components/CurrencyInput';
+import { theme } from '../../src/theme';
 
 export default function NewLoanScreen() {
   const [borrowerPhone, setBorrowerPhone] = useState('');
@@ -32,19 +33,19 @@ export default function NewLoanScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 p-6">
-      <Text className="text-2xl font-bold mb-6">
+    <View style={styles.container}>
+      <Text style={styles.title}>
         {t('loans.new')}
       </Text>
       
-      <View className="bg-white rounded-lg p-4 shadow-sm">
+      <View style={styles.card}>
         {/* Borrower Phone */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.form.borrower')}
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg p-4"
+            style={styles.input}
             placeholder="+226 XX XX XX XX"
             keyboardType="phone-pad"
             value={borrowerPhone}
@@ -53,8 +54,8 @@ export default function NewLoanScreen() {
         </View>
         
         {/* Amount */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.form.amount')}
           </Text>
           <CurrencyInput
@@ -64,12 +65,12 @@ export default function NewLoanScreen() {
         </View>
         
         {/* Purpose */}
-        <View className="mb-4">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.form.purpose')}
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg p-4"
+            style={styles.input}
             placeholder={t('loans.form.purpose')}
             value={purpose}
             onChangeText={setPurpose}
@@ -77,12 +78,12 @@ export default function NewLoanScreen() {
         </View>
         
         {/* Due Date */}
-        <View className="mb-6">
-          <Text className="text-gray-700 mb-2 font-medium">
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>
             {t('loans.form.dueDate')}
           </Text>
           <TextInput
-            className="border border-gray-300 rounded-lg p-4"
+            style={styles.input}
             placeholder="YYYY-MM-DD"
             value={dueDate}
             onChangeText={setDueDate}
@@ -91,11 +92,11 @@ export default function NewLoanScreen() {
         
         {/* Submit Button */}
         <TouchableOpacity
-          className={`bg-primary-500 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleCreateLoan}
           disabled={loading}
         >
-          <Text className="text-white text-center font-bold text-lg">
+          <Text style={styles.buttonText}>
             {loading ? t('common.loading') : t('loans.form.submit')}
           </Text>
         </TouchableOpacity>
@@ -103,3 +104,55 @@ export default function NewLoanScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.xl,
+    paddingTop: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    marginBottom: theme.spacing.xxl,
+    color: theme.colors.text,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadow.md,
+  },
+  inputGroup: {
+    marginBottom: theme.spacing.xxl,
+  },
+  label: {
+    color: theme.colors.text,
+    marginBottom: theme.spacing.sm,
+    fontWeight: 'medium',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+    marginTop: theme.spacing.sm,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+});

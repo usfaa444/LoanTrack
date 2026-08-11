@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../../src/theme';
 
 export default function OTPScreen() {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const router = useRouter();
   const { phone } = useLocalSearchParams();
   const { setToken, setUser } = useAuthStore();
   const { t } = useTranslation();
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
     if (resendCooldown > 0) {
@@ -23,8 +25,27 @@ export default function OTPScreen() {
     }
   }, [resendCooldown]);
 
+  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    // Move to next input if a digit is entered
+    if (text && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    // Move to previous input on backspace if current input is empty
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleVerifyOTP = async () => {
-    if (otp.length !== 6) {
+    const otpString = otp.join('');
+    if (otpString.length !== 6) {
       Alert.alert(t('common.error'), t('auth.otp.placeholder'));
       return;
     }
@@ -33,7 +54,7 @@ export default function OTPScreen() {
     try {
       const response = await api.post('/auth/verify-otp', {
         phone,
-        otp,
+        otp: otpString,
       });
 
       if (response.data.token) {
@@ -63,6 +84,9 @@ export default function OTPScreen() {
       const response = await api.post('/auth/send-otp', { phone });
       if (response.data.success) {
         setResendCooldown(60); // 60 second cooldown
+        // Clear OTP fields
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
         Alert.alert(t('common.success'), t('auth.otp.resend'));
       } else {
         Alert.alert(t('common.error'), response.message || t('common.error'));
@@ -73,47 +97,126 @@ export default function OTPScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white p-6 justify-center">
-      <Text className="text-2xl font-bold text-center mb-2">
-        {t('auth.otp.title')}
-      </Text>
-      <Text className="text-gray-600 text-center mb-8">
-        {t('auth.otp.instruction', { phone })}
-      </Text>
-      
-      <View className="mb-6">
-        <TextInput
-          className="border border-gray-300 rounded-lg p-4 text-lg text-center text-2xl tracking-widest"
-          placeholder="------"
-          keyboardType="number-pad"
-          maxLength={6}
-          value={otp}
-          onChangeText={setOtp}
-          editable={!loading}
-        />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>
+          {t('auth.otp.title')}
+        </Text>
+        <Text style={styles.instruction}>
+          {t('auth.otp.instruction', { phone })}
+        </Text>
+        
+        <View style={styles.otpContainer}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => (inputRefs.current[index] = ref)}
+              style={styles.otpInput}
+              keyboardType="number-pad"
+              maxLength={1}
+              value={digit}
+              onChangeText={(text) => handleOtpChange(text, index)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+              editable={!loading}
+              autoFocus={index === 0}
+            />
+          ))}
+        </View>
+        
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleVerifyOTP}
+          disabled={loading}
+        >
+          <Text style={styles.buttonText}>
+            {loading ? t('common.loading') : t('auth.otp.verify')}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.resendButton, resendCooldown > 0 && styles.resendButtonDisabled]}
+          onPress={handleResendOTP}
+          disabled={resendCooldown > 0 || loading}
+        >
+          <Text style={styles.resendButtonText}>
+            {resendCooldown > 0 
+              ? t('auth.otp.resendIn', { time: resendCooldown }) 
+              : t('auth.otp.resend')}
+          </Text>
+        </TouchableOpacity>
       </View>
-      
-      <TouchableOpacity
-        className={`bg-primary-500 rounded-lg py-4 mb-4 ${loading ? 'opacity-50' : ''}`}
-        onPress={handleVerifyOTP}
-        disabled={loading}
-      >
-        <Text className="text-white text-center font-bold text-lg">
-          {loading ? t('common.loading') : t('auth.otp.verify')}
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        className={`items-center ${resendCooldown > 0 ? 'opacity-50' : ''}`}
-        onPress={handleResendOTP}
-        disabled={resendCooldown > 0 || loading}
-      >
-        <Text className="text-primary-500 font-medium">
-          {resendCooldown > 0 
-            ? t('auth.otp.resendIn', { time: resendCooldown }) 
-            : t('auth.otp.resend')}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.md,
+  },
+  instruction: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.massive,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    marginBottom: theme.spacing.massive,
+  },
+  otpInput: {
+    width: 50,
+    height: 60,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    textAlign: 'center',
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    backgroundColor: theme.colors.surface,
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    ...theme.shadow.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+  resendButton: {
+    alignItems: 'center',
+  },
+  resendButtonDisabled: {
+    opacity: 0.5,
+  },
+  resendButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+  },
+});

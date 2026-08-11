@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../theme';
 
 type Status = 'active' | 'paid' | 'overdue';
 
@@ -11,41 +12,69 @@ interface StatusBadgeProps {
 export default function StatusBadge({ status }: StatusBadgeProps) {
   const { t } = useTranslation();
   
-  const getStatusColor = () => {
+  const getStatusStyles = () => {
     switch (status) {
       case 'active':
-        return 'bg-primary-100 border-primary-500';
+        return {
+          backgroundColor: theme.colors.primaryLight + '20',
+          borderColor: theme.colors.primary,
+          textColor: theme.colors.primaryDark,
+        };
       case 'paid':
-        return 'bg-success-100 border-success-500';
+        return {
+          backgroundColor: theme.colors.successLight,
+          borderColor: theme.colors.success,
+          textColor: theme.colors.success,
+        };
       case 'overdue':
-        return 'bg-danger-100 border-danger-500';
+        return {
+          backgroundColor: theme.colors.errorLight,
+          borderColor: theme.colors.error,
+          textColor: theme.colors.error,
+        };
       default:
-        return 'bg-gray-100 border-gray-500';
+        return {
+          backgroundColor: theme.colors.backgroundAlt,
+          borderColor: theme.colors.border,
+          textColor: theme.colors.textSecondary,
+        };
     }
   };
 
-  const getStatusTextColor = () => {
-    switch (status) {
-      case 'active':
-        return 'text-primary-700';
-      case 'paid':
-        return 'text-success-700';
-      case 'overdue':
-        return 'text-danger-700';
-      default:
-        return 'text-gray-700';
-    }
-  };
+  const statusStyles = getStatusStyles();
 
   return (
     <View
-      className={`rounded-full px-3 py-1 border ${getStatusColor()}`}
+      style={[
+        styles.badge,
+        {
+          backgroundColor: statusStyles.backgroundColor,
+          borderColor: statusStyles.borderColor,
+        }
+      ]}
     >
       <Text
-        className={`text-xs font-bold ${getStatusTextColor()}`}
+        style={[
+          styles.badgeText,
+          { color: statusStyles.textColor }
+        ]}
       >
         {t(`components.statusBadge.${status}`)}
       </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: 'bold',
+  },
+});

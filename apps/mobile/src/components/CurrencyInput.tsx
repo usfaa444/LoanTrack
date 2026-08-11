@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { theme } from '../theme';
 
 interface CurrencyInputProps {
   value: string;
@@ -32,12 +33,12 @@ export default function CurrencyInput({
   };
 
   return (
-    <View className="flex-row items-center border border-gray-300 rounded-lg p-4">
-      <Text className="text-gray-700 mr-2 font-medium">
+    <View style={styles.container}>
+      <Text style={styles.currencyText}>
         {currency}
       </Text>
       <TextInput
-        className="flex-1 text-lg"
+        style={styles.input}
         placeholder="0.00"
         keyboardType="decimal-pad"
         value={value}
@@ -46,3 +47,25 @@ export default function CurrencyInput({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+  },
+  currencyText: {
+    color: theme.colors.text,
+    marginRight: theme.spacing.sm,
+    fontWeight: 'medium',
+    fontSize: theme.fontSize.md,
+  },
+  input: {
+    flex: 1,
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text,
+  },
+});

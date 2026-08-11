@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import LoanCard from '../../src/components/LoanCard';
 import EmptyState from '../../src/components/EmptyState';
+import { theme } from '../../src/theme';
 
 export default function LoansScreen() {
   const { t } = useTranslation();
@@ -46,26 +47,28 @@ export default function LoansScreen() {
     : loans.filter(loan => loan.status === activeTab);
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1 p-6">
-        <Text className="text-2xl font-bold mb-6">
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        <Text style={styles.title}>
           {t('loans.title')}
         </Text>
         
         {/* Status Tabs */}
-        <View className="flex-row bg-white rounded-lg p-1 mb-6">
+        <View style={styles.tabsContainer}>
           {['all', 'active', 'paid', 'overdue'].map((tab) => (
             <TouchableOpacity
               key={tab}
-              className={`flex-1 py-2 rounded-md ${
-                activeTab === tab ? 'bg-primary-500' : ''
-              }`}
+              style={[
+                styles.tab,
+                activeTab === tab && styles.activeTab
+              ]}
               onPress={() => setActiveTab(tab)}
             >
               <Text
-                className={`text-center font-medium ${
-                  activeTab === tab ? 'text-white' : 'text-gray-600'
-                }`}
+                style={[
+                  styles.tabText,
+                  activeTab === tab ? styles.activeTabText : styles.inactiveTabText
+                ]}
               >
                 {t(`loans.tabs.${tab}`)}
               </Text>
@@ -75,7 +78,7 @@ export default function LoansScreen() {
         
         {/* Loan List */}
         {filteredLoans.length > 0 ? (
-          <View className="space-y-4">
+          <View style={styles.loansList}>
             {filteredLoans.map((loan) => (
               <TouchableOpacity
                 key={loan.id}
@@ -95,11 +98,76 @@ export default function LoansScreen() {
       
       {/* Floating Action Button */}
       <TouchableOpacity
-        className="absolute bottom-6 right-6 bg-primary-500 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+        style={styles.fab}
         onPress={() => router.push('/loans/new')}
       >
-        <Text className="text-white text-2xl">+</Text>
+        <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  scrollView: {
+    flex: 1,
+    padding: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xxl,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.xs,
+    marginBottom: theme.spacing.xxl,
+    ...theme.shadow.md,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  activeTab: {
+    backgroundColor: theme.colors.primary,
+  },
+  tabText: {
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+  },
+  activeTabText: {
+    color: theme.colors.textInverse,
+  },
+  inactiveTabText: {
+    color: theme.colors.textSecondary,
+  },
+  loansList: {
+    gap: theme.spacing.lg,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: theme.spacing.xxl,
+    right: theme.spacing.xl,
+    backgroundColor: theme.colors.primary,
+    width: 56,
+    height: 56,
+    borderRadius: theme.borderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadow.lg,
+  },
+  fabText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+  },
+});

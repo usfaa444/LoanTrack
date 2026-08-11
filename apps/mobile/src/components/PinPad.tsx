@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../theme';
 
 interface PinPadProps {
   onPinEnter: (pin: string) => void;
@@ -42,61 +43,66 @@ export default function PinPad({
   };
 
   return (
-    <View className="items-center">
+    <View style={styles.container}>
       {/* PIN Dots */}
-      <View className="flex-row justify-center mb-8">
+      <View style={styles.dotsContainer}>
         {Array.from({ length }).map((_, index) => (
           <View
             key={index}
-            className={`w-4 h-4 rounded-full mx-2 ${
-              index < pin.length ? 'bg-primary-500' : 'bg-gray-300'
-            }`}
+            style={[
+              styles.dot,
+              index < pin.length 
+                ? styles.filledDot 
+                : styles.emptyDot
+            ]}
           />
         ))}
       </View>
       
       {/* Number Pad */}
-      <View className="w-64">
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <TouchableOpacity
-            key={num}
-            className="items-center justify-center w-16 h-16 rounded-full mb-4 self-center"
-            onPress={() => handleNumberPress(num.toString())}
-            disabled={loading}
-          >
-            <Text className="text-2xl font-bold text-gray-800">
-              {num}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      <View style={styles.padContainer}>
+        <View style={styles.numberGrid}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            <TouchableOpacity
+              key={num}
+              style={styles.numberButton}
+              onPress={() => handleNumberPress(num.toString())}
+              disabled={loading}
+            >
+              <Text style={styles.numberText}>
+                {num}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
         
-        <View className="flex-row justify-between">
+        <View style={styles.bottomRow}>
           <TouchableOpacity
-            className="items-center justify-center w-16 h-16 rounded-full"
+            style={styles.actionButton}
             onPress={handleClear}
             disabled={loading}
           >
-            <Text className="text-lg font-bold text-gray-500">
+            <Text style={styles.actionText}>
               Clear
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            className="items-center justify-center w-16 h-16 rounded-full"
+            style={styles.numberButton}
             onPress={() => handleNumberPress('0')}
             disabled={loading}
           >
-            <Text className="text-2xl font-bold text-gray-800">
+            <Text style={styles.numberText}>
               0
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            className="items-center justify-center w-16 h-16 rounded-full"
+            style={styles.actionButton}
             onPress={handleBackspace}
             disabled={loading}
           >
-            <Text className="text-2xl font-bold text-gray-800">
+            <Text style={styles.actionText}>
               ←
             </Text>
           </TouchableOpacity>
@@ -104,11 +110,11 @@ export default function PinPad({
         
         {onBack && (
           <TouchableOpacity
-            className="mt-4 items-center"
+            style={styles.backButton}
             onPress={onBack}
             disabled={loading}
           >
-            <Text className="text-primary-500 font-medium">
+            <Text style={styles.backText}>
               {t('common.cancel')}
             </Text>
           </TouchableOpacity>
@@ -117,3 +123,74 @@ export default function PinPad({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: theme.spacing.huge,
+  },
+  dot: {
+    width: 16,
+    height: 16,
+    borderRadius: theme.borderRadius.full,
+    marginHorizontal: theme.spacing.sm,
+  },
+  filledDot: {
+    backgroundColor: theme.colors.primary,
+  },
+  emptyDot: {
+    backgroundColor: theme.colors.border,
+  },
+  padContainer: {
+    width: 256,
+  },
+  numberGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  numberButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: theme.borderRadius.full,
+    marginBottom: theme.spacing.lg,
+  },
+  numberText: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  actionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: theme.borderRadius.full,
+  },
+  actionText: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+    color: theme.colors.textSecondary,
+  },
+  backButton: {
+    marginTop: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  backText: {
+    color: theme.colors.primary,
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+  },
+});

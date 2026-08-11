@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { theme } from '../../src/theme';
 
 export default function DashboardScreen() {
   const { t } = useTranslation();
@@ -20,65 +21,65 @@ export default function DashboardScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-6">
-        <Text className="text-2xl font-bold mb-6">
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
+        <Text style={styles.title}>
           {t('dashboard.title')}
         </Text>
         
         {/* Summary Cards */}
-        <View className="flex-row flex-wrap justify-between mb-6">
-          <View className="bg-white rounded-lg p-4 w-[48%] mb-4 shadow-sm">
-            <Text className="text-gray-600 text-sm">
+        <View style={styles.cardsContainer}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
               {t('dashboard.activeLoans')}
             </Text>
-            <Text className="text-2xl font-bold mt-1">
+            <Text style={styles.cardValueLarge}>
               {summaryData.activeLoans}
             </Text>
           </View>
           
-          <View className="bg-white rounded-lg p-4 w-[48%] mb-4 shadow-sm">
-            <Text className="text-gray-600 text-sm">
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
               {t('dashboard.totalOutstanding')}
             </Text>
-            <Text className="text-2xl font-bold mt-1">
+            <Text style={styles.cardValueLarge}>
               {summaryData.totalOutstanding.toLocaleString()} XOF
             </Text>
           </View>
           
-          <View className="bg-white rounded-lg p-4 w-[48%] shadow-sm">
-            <Text className="text-gray-600 text-sm">
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
               {t('dashboard.totalPaid')}
             </Text>
-            <Text className="text-2xl font-bold mt-1">
+            <Text style={styles.cardValueLarge}>
               {summaryData.totalPaid.toLocaleString()} XOF
             </Text>
           </View>
           
-          <View className="bg-white rounded-lg p-4 w-[48%] shadow-sm">
-            <Text className="text-gray-600 text-sm">
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>
               {t('dashboard.nextDue')}
             </Text>
-            <Text className="text-xl font-bold mt-1">
+            <Text style={styles.cardValueMedium}>
               {summaryData.nextDue.amount.toLocaleString()} XOF
             </Text>
-            <Text className="text-gray-500 text-sm">
+            <Text style={styles.cardDate}>
               {summaryData.nextDue.date}
             </Text>
           </View>
         </View>
         
         {/* Quick Actions */}
-        <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-          <Text className="text-lg font-bold mb-4">
+        <View style={styles.actionsContainer}>
+          <Text style={styles.sectionTitle}>
             {t('dashboard.quickActions')}
           </Text>
           
           <TouchableOpacity 
-            className="bg-primary-500 rounded-lg py-3 mb-3"
+            style={styles.actionButton}
             onPress={() => router.push('/loans/new')}
           >
-            <Text className="text-white text-center font-medium">
+            <Text style={styles.actionButtonText}>
               {t('dashboard.addLoan')}
             </Text>
           </TouchableOpacity>
@@ -87,3 +88,77 @@ export default function DashboardScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    padding: theme.spacing.xl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.xxl,
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.xxl,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    width: '48%',
+    marginBottom: theme.spacing.lg,
+    ...theme.shadow.md,
+  },
+  cardTitle: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.sm,
+  },
+  cardValueLarge: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  cardValueMedium: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  cardDate: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginTop: theme.spacing.xs,
+  },
+  actionsContainer: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    ...theme.shadow.md,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: theme.spacing.lg,
+  },
+  actionButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionButtonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.md,
+    fontWeight: 'medium',
+  },
+});

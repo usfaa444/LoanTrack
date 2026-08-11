@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../theme';
 
 interface EmptyStateProps {
   title: string;
@@ -16,16 +17,41 @@ export default function EmptyState({
   const { t } = useTranslation();
 
   return (
-    <View className="flex-1 items-center justify-center p-8">
-      <Text className="text-5xl mb-4">
+    <View style={styles.container}>
+      <Text style={styles.icon}>
         {icon}
       </Text>
-      <Text className="text-xl font-bold text-center mb-2">
+      <Text style={styles.title}>
         {title}
       </Text>
-      <Text className="text-gray-600 text-center">
+      <Text style={styles.message}>
         {message}
       </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.xxl,
+  },
+  icon: {
+    fontSize: theme.fontSize.huge,
+    marginBottom: theme.spacing.lg,
+  },
+  title: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  message: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+  },
+});

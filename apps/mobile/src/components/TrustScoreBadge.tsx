@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { theme } from '../theme';
 
 interface TrustScoreBadgeProps {
   score: number; // 0-100
@@ -7,9 +8,9 @@ interface TrustScoreBadgeProps {
 
 export default function TrustScoreBadge({ score }: TrustScoreBadgeProps) {
   const getScoreColor = () => {
-    if (score >= 80) return 'bg-success-500';
-    if (score >= 60) return 'bg-warning-500';
-    return 'bg-danger-500';
+    if (score >= 80) return theme.colors.success;
+    if (score >= 60) return theme.colors.secondary;
+    return theme.colors.error;
   };
 
   const getScoreLabel = () => {
@@ -19,10 +20,23 @@ export default function TrustScoreBadge({ score }: TrustScoreBadgeProps) {
   };
 
   return (
-    <View className={`rounded-full px-3 py-1 ${getScoreColor()}`}>
-      <Text className="text-white text-xs font-bold">
+    <View style={[styles.badge, { backgroundColor: getScoreColor() }]}>
+      <Text style={styles.text}>
         {score} ({getScoreLabel()})
       </Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+  },
+  text: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.xs,
+    fontWeight: 'bold',
+  },
+});

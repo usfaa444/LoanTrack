@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../../src/theme';
 
 export default function PhoneAuthScreen() {
   const [phone, setPhone] = useState('');
@@ -49,37 +50,120 @@ export default function PhoneAuthScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white p-6 justify-center">
-      <Text className="text-2xl font-bold text-center mb-2">
-        {t('auth.phone.title')}
-      </Text>
-      <Text className="text-gray-600 text-center mb-8">
-        {t('auth.phone.placeholder')}
-      </Text>
-      
-      <View className="mb-6">
-        <Text className="text-gray-700 mb-2 font-medium">
-          +226
-        </Text>
-        <TextInput
-          className="border border-gray-300 rounded-lg p-4 text-lg"
-          placeholder="XX XX XX XX"
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
-          editable={!loading}
-        />
-      </View>
-      
-      <TouchableOpacity
-        className={`bg-primary-500 rounded-lg py-4 ${loading ? 'opacity-50' : ''}`}
-        onPress={handleSendOTP}
-        disabled={loading}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Text className="text-white text-center font-bold text-lg">
-          {loading ? t('common.loading') : t('auth.phone.continue')}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.header}>
+          <Text style={styles.mosqueEmoji}>🕌</Text>
+          <Text style={styles.title}>LoanTrack</Text>
+          <Text style={styles.subtitle}>Burkina Faso</Text>
+        </View>
+        
+        <View style={styles.content}>
+          <Text style={styles.description}>
+            {t('auth.phone.placeholder')}
+          </Text>
+          
+          <View style={styles.inputContainer}>
+            <Text style={styles.prefix}>+226</Text>
+            <TextInput
+              style={styles.textInput}
+              placeholder="XX XX XX XX"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+              editable={!loading}
+            />
+          </View>
+          
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSendOTP}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>
+              {loading ? t('common.loading') : t('auth.phone.continue')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  header: {
+    backgroundColor: theme.colors.primary,
+    borderBottomLeftRadius: theme.borderRadius.xl,
+    borderBottomRightRadius: theme.borderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.huge,
+    marginBottom: theme.spacing.massive,
+  },
+  mosqueEmoji: {
+    fontSize: theme.fontSize.xxxl,
+    marginBottom: theme.spacing.sm,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    color: theme.colors.secondary,
+    marginBottom: theme.spacing.xs,
+  },
+  subtitle: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.textInverse,
+  },
+  content: {
+    paddingHorizontal: theme.spacing.xl,
+    flex: 1,
+  },
+  description: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.massive,
+  },
+  inputContainer: {
+    marginBottom: theme.spacing.massive,
+  },
+  prefix: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text,
+    fontWeight: 'bold',
+    marginBottom: theme.spacing.sm,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    fontSize: theme.fontSize.lg,
+  },
+  button: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.shadow.lg,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+  },
+});

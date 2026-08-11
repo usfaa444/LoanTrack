@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import StatusBadge from '../../src/components/StatusBadge';
 import PaymentTimeline from '../../src/components/PaymentTimeline';
+import { theme } from '../../src/theme';
 
 export default function LoanDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -40,66 +41,66 @@ export default function LoanDetailScreen() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-6">
+    <ScrollView style={styles.container}>
+      <View style={styles.content}>
         {/* Loan Header */}
-        <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-          <View className="flex-row justify-between items-start mb-4">
-            <Text className="text-xl font-bold">
+        <View style={styles.card}>
+          <View style={styles.header}>
+            <Text style={styles.borrowerName}>
               {loan.borrower}
             </Text>
             <StatusBadge status={loan.status} />
           </View>
           
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>
               {t('loans.detail.amount')}
             </Text>
-            <Text className="font-bold">
+            <Text style={styles.infoValue}>
               {loan.amount.toLocaleString()} XOF
             </Text>
           </View>
           
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-600">
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>
               {t('loans.detail.remaining')}
             </Text>
-            <Text className="font-bold">
+            <Text style={styles.infoValue}>
               {loan.remaining.toLocaleString()} XOF
             </Text>
           </View>
           
-          <View className="flex-row justify-between">
-            <Text className="text-gray-600">
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>
               {t('loans.form.dueDate')}
             </Text>
-            <Text className="font-bold">
+            <Text style={styles.infoValue}>
               {loan.dueDate}
             </Text>
           </View>
         </View>
         
         {/* Purpose */}
-        <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-          <Text className="text-gray-600 mb-2">
+        <View style={[styles.card, styles.purposeCard]}>
+          <Text style={styles.infoLabel}>
             {t('loans.form.purpose')}
           </Text>
-          <Text className="font-medium">
+          <Text style={styles.purposeText}>
             {loan.purpose}
           </Text>
         </View>
         
         {/* Payments Section */}
-        <View className="bg-white rounded-lg p-4 mb-6 shadow-sm">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold">
+        <View style={styles.card}>
+          <View style={styles.paymentsHeader}>
+            <Text style={styles.paymentsTitle}>
               {t('loans.detail.payments')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push(`/loans/${id}/payment`)}
-              className="bg-primary-500 rounded-lg px-3 py-1"
+              style={styles.addButton}
             >
-              <Text className="text-white text-sm">
+              <Text style={styles.addButtonText}>
                 {t('loans.detail.addPayment')}
               </Text>
             </TouchableOpacity>
@@ -108,7 +109,7 @@ export default function LoanDetailScreen() {
           {payments.length > 0 ? (
             <PaymentTimeline payments={payments} />
           ) : (
-            <Text className="text-gray-500 text-center py-4">
+            <Text style={styles.emptyState}>
               {t('components.emptyState.noData')}
             </Text>
           )}
@@ -117,3 +118,80 @@ export default function LoanDetailScreen() {
     </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    padding: theme.spacing.xl,
+  },
+  card: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.xxl,
+    ...theme.shadow.md,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.lg,
+  },
+  borrowerName: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.sm,
+  },
+  infoLabel: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.md,
+  },
+  infoValue: {
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    fontSize: theme.fontSize.md,
+  },
+  purposeCard: {
+    marginBottom: theme.spacing.xxl,
+  },
+  purposeText: {
+    fontWeight: 'medium',
+    color: theme.colors.text,
+    fontSize: theme.fontSize.md,
+  },
+  paymentsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  paymentsTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+  },
+  addButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
+  addButtonText: {
+    color: theme.colors.textInverse,
+    fontSize: theme.fontSize.sm,
+    fontWeight: 'medium',
+  },
+  emptyState: {
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    paddingVertical: theme.spacing.lg,
+  },
+});

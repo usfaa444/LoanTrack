@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, Alert } from 'react-native';
+import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import PinPad from '../../src/components/PinPad';
 import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
+import { theme } from '../../src/theme';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export default function PinSetupScreen() {
   const [pin, setPin] = useState('');
@@ -59,13 +61,19 @@ export default function PinSetupScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white p-6 justify-center">
-      <Text className="text-2xl font-bold text-center mb-2">
+    <View style={styles.container}>
+      <MaterialIcons 
+        name="lock" 
+        size={64} 
+        color={theme.colors.primary} 
+        style={styles.icon} 
+      />
+      <Text style={styles.title}>
         {step === 'create' 
           ? t('auth.pin.setup.title') 
           : t('auth.pin.setup.confirm')}
       </Text>
-      <Text className="text-gray-600 text-center mb-8">
+      <Text style={styles.subtitle}>
         {step === 'create' 
           ? t('auth.pin.setup.instruction') 
           : t('auth.pin.setup.confirm')}
@@ -80,3 +88,29 @@ export default function PinSetupScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.surface,
+    paddingHorizontal: theme.spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  icon: {
+    marginBottom: theme.spacing.xxl,
+  },
+  title: {
+    fontSize: theme.fontSize.xxxl,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: theme.fontSize.lg,
+    textAlign: 'center',
+    marginBottom: theme.spacing.huge,
+    color: theme.colors.textSecondary,
+  },
+});
