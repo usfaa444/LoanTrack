@@ -10,7 +10,7 @@ import { useCountryStore } from '../../src/stores/countryStore';
 import { countries } from '../../src/data/countries';
 import { theme } from '../../src/theme';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
 
 export default function PhoneScreen() {
   const [phone, setPhone] = useState('');
