@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Slot } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../src/stores/authStore';
 import '../global.css';
@@ -9,25 +10,19 @@ import '../src/i18n';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-    },
+    queries: { staleTime: 1000 * 60 * 5 },
   },
 });
 
-export default function RootLayout() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  
-  useEffect(() => {
-    // Initialize any required services here
-  }, []);
+const asyncPersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+});
 
+export default function RootLayout() {
   return (
     <PersistQueryClientProvider
       client={queryClient}
-      persistOptions={{
-        storage: AsyncStorage,
-      }}
+      persistOptions={{ persister: asyncPersister }}
     >
       <Slot />
     </PersistQueryClientProvider>
