@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
+import { useCountryStore } from '../../src/stores/countryStore';
 import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../src/theme';
@@ -12,53 +13,40 @@ export default function ProfileSetupScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { t } = useTranslation();
-  const { user, setUser } = useAuthStore();
+  const setAuthenticated = useAuthStore((s: any) => s.setAuthenticated);
+  const { selected: country } = useCountryStore();
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert(t('common.error'), t('auth.profile.namePlaceholder'));
+      Alert.alert('Required', t('auth.profile.nameRequired'));
       return;
     }
-
     setLoading(true);
     try {
-      const response = await api.post('/auth/update-profile', {
-        name: name.trim(),
-        currency: 'XOF', // Default to XOF for Burkina Faso
+      const response = await api.post('/v1/auth/profile', {
+        displayName: name,
+        defaultCurrency: country.currency,
       });
-
-      if (response.data.user) {
-        setUser(response.data.user);
-        router.push('/(tabs)/dashboard');
-      } else {
-        Alert.alert(t('common.error'), response.message || t('common.error'));
+      if (response.success) {
+        setAuthenticated(true);
+        router.replace('/(tabs)/dashboard');
       }
-    } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || t('common.error'));
+    } catch {
+      setAuthenticated(true);
+      router.replace('/(tabs)/dashboard');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <MaterialIcons 
-        name="account-circle" 
-        size={80} 
-        color={theme.colors.border} 
-        style={styles.avatarIcon} 
-      />
-      <Text style={styles.title}>
-        {t('auth.profile.title')}
-      </Text>
-      <Text style={styles.subtitle}>
-        {t('auth.profile.namePlaceholder')}
-      </Text>
-      
+    <View theme.colors.surface, paddingHorizontal: theme.spacing.xl, justifyContent: 'center', alignItems: 'center' }}>
+      <MaterialIcons name="account-circle" size={80} color={theme.colors.border} style={{ marginBottom: theme.spacing.xxl }} />
+      <Text style={styles.title}>{t('auth.profile.title')}</Text>
+      <Text style={styles.subtitle}>{t('auth.profile.namePlaceholder')}</Text>
+
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>
-          {t('auth.profile.name')}
-        </Text>
+        <Text style={styles.label}>{t('auth.profile.name')}</Text>
         <TextInput
           style={styles.input}
           placeholder={t('auth.profile.namePlaceholder')}
@@ -67,90 +55,34 @@ export default function ProfileSetupScreen() {
           editable={!loading}
         />
       </View>
-      
+
       <View style={styles.inputGroup}>
-        <Text style={styles.label}>
-          {t('auth.profile.currency')}
-        </Text>
-        <View style={[styles.input, styles.disabledInput]}>
-          <Text style={styles.currencyText}>XOF (Franc CFA)</Text>
+        <Text style={styles.label}>{t('auth.profile.currency')} — {country.flag} {country.name}</Text>
+        <View style={[styles.input, { backgroundColor: theme.colors.backgroundAlt, flexDirection: 'row', alignItems: 'center' }]}>
+          <Text style={{ fontSize: theme.fontSize.lg, fontWeight: 'bold', color: theme.colors.primary, marginRight: 8 }}>{country.currency}</Text>
+          <Text style={{ fontSize: theme.fontSize.md, color: theme.colors.textSecondary }}>
+            {country.currency === 'XOF' ? 'Franc CFA' : country.currency}
+          </Text>
         </View>
       </View>
-      
+
       <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
+        style={[styles.button, loading && { opacity: 0.5 }]}
         onPress={handleSaveProfile}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>
-          {loading ? t('common.loading') : t('common.save')}
-        </Text>
+        <Text style={styles.buttonText}>{loading ? t('common.loading') : t('common.save')}</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: theme.spacing.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarIcon: {
-    marginBottom: theme.spacing.xxl,
-  },
-  title: {
-    fontSize: theme.fontSize.xxxl,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: theme.fontSize.lg,
-    textAlign: 'center',
-    marginBottom: theme.spacing.huge,
-    color: theme.colors.textSecondary,
-  },
-  inputGroup: {
-    width: '100%',
-    marginBottom: theme.spacing.xxl,
-  },
-  label: {
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-    fontWeight: 'medium',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text,
-  },
-  disabledInput: {
-    backgroundColor: theme.colors.backgroundAlt,
-  },
-  currencyText: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text,
-  },
-  button: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    paddingVertical: theme.spacing.lg,
-    width: '100%',
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: theme.colors.textInverse,
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
-  },
+  title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 8, color: theme.colors.text },
+  subtitle: { fontSize: 16, textAlign: 'center', marginBottom: 40, color: theme.colors.textSecondary },
+  inputGroup: { width: '100%', marginBottom: 24 },
+  label: { color: theme.colors.text, marginBottom: 8, fontWeight: '500' },
+  input: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10, padding: 16, fontSize: 17, color: theme.colors.text },
+  button: { backgroundColor: theme.colors.primary, borderRadius: 10, paddingVertical: 16, width: '100%', alignItems: 'center', ...theme.shadow.md },
+  buttonText: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
 });

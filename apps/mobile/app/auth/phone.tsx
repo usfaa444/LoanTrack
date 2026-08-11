@@ -1,92 +1,132 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, SafeAreaView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  SafeAreaView, KeyboardAvoidingView, Platform, Modal, FlatList, Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '../../src/stores/authStore';
-import { api } from '../../src/lib/api';
+import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
+import { useCountryStore } from '../../src/stores/countryStore';
+import { countries } from '../../src/data/countries';
 import { theme } from '../../src/theme';
 
-export default function PhoneAuthScreen() {
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001';
+
+export default function PhoneScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const { selected, setCountry } = useCountryStore();
   const router = useRouter();
   const { t } = useTranslation();
 
-  const validatePhone = (phone: string) => {
-    // Basic validation for Burkina Faso phone numbers
-    const phoneRegex = /^(?:\+226|00226|226)?(?:\s)?[0-9]{8}$/;
-    return phoneRegex.test(phone);
-  };
-
-  const handleSendOTP = async () => {
-    if (!validatePhone(phone)) {
-      Alert.alert(t('common.error'), t('auth.phone.validation'));
+  const handleSendOtp = async () => {
+    const fullPhone = selected.phonePrefix + phone.replace(/\s/g, '');
+    if (phone.length < 8) {
+      Alert.alert('Invalid', 'Please enter a valid phone number');
       return;
     }
-
     setLoading(true);
     try {
-      // Format phone number for API (E.164)
-      let formattedPhone = phone;
-      if (!phone.startsWith('+')) {
-        formattedPhone = `+226${phone.replace(/^(00226|226)/, '')}`;
-      }
-
-      const response = await api.post('/auth/send-otp', { phone: formattedPhone });
-      
-      if (response.data.success) {
-        router.push({
-          pathname: '/auth/otp',
-          params: { phone: formattedPhone }
-        });
+      const res = await fetch(`${API_URL}/v1/auth/otp/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: fullPhone }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        router.push({ pathname: '/auth/otp', params: { phone: fullPhone } });
       } else {
-        Alert.alert(t('common.error'), response.message || t('common.error'));
+        Alert.alert('Error', data.error || 'Failed to send OTP. Check your Supabase configuration.');
       }
-    } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || t('common.error'));
+    } catch {
+      Alert.alert('Network Error', 'Could not reach server. Check your connection and API URL.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.header}>
-          <Text style={styles.mosqueEmoji}>🕌</Text>
-          <Text style={styles.title}>LoanTrack</Text>
-          <Text style={styles.subtitle}>Burkina Faso</Text>
-        </View>
-        
-        <View style={styles.content}>
-          <Text style={styles.description}>
-            {t('auth.phone.placeholder')}
-          </Text>
-          
-          <View style={styles.inputContainer}>
-            <Text style={styles.prefix}>+226</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="XX XX XX XX"
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
-              editable={!loading}
-            />
+    <SafeAreaView style={styles.safe}>
+      <StatusBar style="dark" />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.flex}>
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.mosqueIcon}>🕌</Text>
+            <Text style={styles.appName}>LoanTrack</Text>
+            <Text style={styles.tagline}>{t('common.welcome')}</Text>
           </View>
-          
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSendOTP}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? t('common.loading') : t('auth.phone.continue')}
-            </Text>
-          </TouchableOpacity>
+
+          {/* Content */}
+          <View style={styles.content}>
+            <Text style={styles.title}>{t('auth.phone.title')}</Text>
+            <Text style={styles.subtitle}>{t('auth.phone.instruction')}</Text>
+
+            {/* Country Selector */}
+            <TouchableOpacity style={styles.countryPicker} onPress={() => setShowPicker(true)}>
+              <Text style={styles.flag}>{selected.flag}</Text>
+              <Text style={styles.countryCode}>{selected.phonePrefix}</Text>
+              <Text style={styles.countryName}>{selected.name}</Text>
+              <Text style={styles.chevron}>▼</Text>
+            </TouchableOpacity>
+
+            {/* Phone Input */}
+            <View style={styles.phoneRow}>
+              <View style={styles.prefixBadge}>
+                <Text style={styles.prefixText}>{selected.phonePrefix}</Text>
+              </View>
+              <TextInput
+                style={styles.phoneInput}
+                placeholder="70 00 00 00"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+                maxLength={10}
+                editable={!loading}
+              />
+            </View>
+
+            {/* Send Button */}
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleSendOtp}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? t('common.loading') : t('auth.phone.sendCode')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Country Picker Modal */}
+          <Modal visible={showPicker} animationType="slide" transparent>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>{t('auth.phone.selectCountry')}</Text>
+                  <TouchableOpacity onPress={() => setShowPicker(false)}>
+                    <Text style={styles.modalClose}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <FlatList
+                  data={countries}
+                  keyExtractor={(c) => c.code}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[styles.countryItem, selected.code === item.code && styles.countryItemSelected]}
+                      onPress={() => { setCountry(item); setShowPicker(false); }}
+                    >
+                      <Text style={styles.flag}>{item.flag}</Text>
+                      <Text style={styles.countryItemName}>{item.name}</Text>
+                      <Text style={styles.countryItemPrefix}>{item.phonePrefix}</Text>
+                      {selected.code === item.code && <Text style={styles.checkmark}>✓</Text>}
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </View>
+          </Modal>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -94,76 +134,52 @@ export default function PhoneAuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
+  safe: { flex: 1, backgroundColor: theme.colors.surface },
+  flex: { flex: 1 },
+  container: { flex: 1, paddingHorizontal: theme.spacing.xl },
+  header: { alignItems: 'center', paddingTop: 60, paddingBottom: theme.spacing.xxxl },
+  mosqueIcon: { fontSize: 48, marginBottom: theme.spacing.sm },
+  appName: { fontSize: 28, fontWeight: 'bold', color: theme.colors.primary, marginBottom: 4 },
+  tagline: { fontSize: theme.fontSize.sm, color: theme.colors.textSecondary },
+  content: { flex: 1 },
+  title: { fontSize: theme.fontSize.xxl, fontWeight: 'bold', color: theme.colors.text, marginBottom: theme.spacing.sm },
+  subtitle: { fontSize: theme.fontSize.md, color: theme.colors.textSecondary, marginBottom: theme.spacing.xxl },
+  countryPicker: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md, padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
   },
-  keyboardAvoidingView: {
-    flex: 1,
+  flag: { fontSize: 22, marginRight: theme.spacing.md },
+  countryCode: { fontSize: theme.fontSize.md, fontWeight: 'bold', color: theme.colors.text, marginRight: theme.spacing.sm },
+  countryName: { flex: 1, fontSize: theme.fontSize.md, color: theme.colors.text },
+  chevron: { fontSize: 12, color: theme.colors.textSecondary },
+  phoneRow: { flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.xxl },
+  prefixBadge: {
+    backgroundColor: theme.colors.backgroundAlt, paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.lg, borderRadius: theme.borderRadius.md,
+    borderWidth: 1, borderColor: theme.colors.border, marginRight: theme.spacing.sm,
   },
-  header: {
-    backgroundColor: theme.colors.primary,
-    borderBottomLeftRadius: theme.borderRadius.xl,
-    borderBottomRightRadius: theme.borderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.huge,
-    marginBottom: theme.spacing.massive,
-  },
-  mosqueEmoji: {
-    fontSize: theme.fontSize.xxxl,
-    marginBottom: theme.spacing.sm,
-  },
-  title: {
-    fontSize: theme.fontSize.xxxl,
-    fontWeight: 'bold',
-    color: theme.colors.secondary,
-    marginBottom: theme.spacing.xs,
-  },
-  subtitle: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.textInverse,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.xl,
-    flex: 1,
-  },
-  description: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.massive,
-  },
-  inputContainer: {
-    marginBottom: theme.spacing.massive,
-  },
-  prefix: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text,
-    fontWeight: 'bold',
-    marginBottom: theme.spacing.sm,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    fontSize: theme.fontSize.lg,
+  prefixText: { fontSize: theme.fontSize.md, fontWeight: 'bold', color: theme.colors.text },
+  phoneInput: {
+    flex: 1, borderWidth: 1, borderColor: theme.colors.border,
+    borderRadius: theme.borderRadius.md, padding: theme.spacing.lg,
+    fontSize: theme.fontSize.lg, color: theme.colors.text,
   },
   button: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.md,
-    padding: theme.spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadow.lg,
+    backgroundColor: theme.colors.primary, borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.lg, alignItems: 'center', ...theme.shadow.md,
   },
-  buttonDisabled: {
-    opacity: 0.5,
-  },
-  buttonText: {
-    color: theme.colors.textInverse,
-    fontSize: theme.fontSize.lg,
-    fontWeight: 'bold',
-  },
+  buttonDisabled: { opacity: 0.5 },
+  buttonText: { color: theme.colors.textInverse, fontSize: theme.fontSize.lg, fontWeight: 'bold' },
+  modalOverlay: { flex: 1, backgroundColor: theme.colors.overlay, justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: theme.colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%', paddingBottom: 40 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: theme.spacing.xl, borderBottomWidth: 1, borderBottomColor: theme.colors.border },
+  modalTitle: { fontSize: theme.fontSize.xl, fontWeight: 'bold', color: theme.colors.text },
+  modalClose: { fontSize: 20, color: theme.colors.textSecondary, padding: theme.spacing.sm },
+  countryItem: { flexDirection: 'row', alignItems: 'center', padding: theme.spacing.lg, paddingHorizontal: theme.spacing.xl },
+  countryItemSelected: { backgroundColor: theme.colors.goldLight },
+  countryItemName: { flex: 1, fontSize: theme.fontSize.md, color: theme.colors.text },
+  countryItemPrefix: { fontSize: theme.fontSize.md, color: theme.colors.textSecondary },
+  checkmark: { fontSize: 18, color: theme.colors.primary, fontWeight: 'bold' },
 });
