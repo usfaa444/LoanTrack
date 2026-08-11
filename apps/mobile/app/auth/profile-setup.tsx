@@ -22,7 +22,7 @@ export default function ProfileSetupScreen() {
     try {
       const response = await api.post('/auth/update-profile', {
         name: name.trim(),
-        currency: 'XOF', / Default to XOF for Burkina Faso
+        currency: 'XOF', // Default to XOF for Burkina Faso
       });
 
       if (response.data.user) {

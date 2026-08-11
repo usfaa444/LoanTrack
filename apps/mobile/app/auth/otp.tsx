@@ -62,7 +62,7 @@ export default function OTPScreen() {
     try {
       const response = await api.post('/auth/send-otp', { phone });
       if (response.data.success) {
-        setResendCooldown(60); / 60 second cooldown
+        setResendCooldown(60); // 60 second cooldown
         Alert.alert(t('common.success'), t('auth.otp.resend'));
       } else {
         Alert.alert(t('common.error'), response.message || t('common.error'));
