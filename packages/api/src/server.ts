@@ -1,48 +1,25 @@
 import fastify from 'fastify';
 import cors from '@fastify/cors';
-import helmet from '@fastify/helmet';
-import rateLimit from '@fastify/rate-limit';
-import jwt from '@fastify/jwt';
-import { config } from './config';
-
-// Import plugins
-import prismaPlugin from './plugins/prisma';
-import redisPlugin from './plugins/redis';
-import authPlugin from './plugins/auth';
-import errorHandlerPlugin from './plugins/error-handler';
-
-// Import routes
-import routes from './routes';
+import { PrismaClient } from '@prisma/client';
 
 const app = fastify({ logger: true });
+const prisma = new PrismaClient();
 
-export async function buildApp() {
-  // Register plugins
-  await app.register(cors, { origin: true });
-  await app.register(helmet);
-  await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
-  await app.register(jwt, { secret: config.JWT_SECRET });
-  await app.register(errorHandlerPlugin);
-  
-  // Register database plugins
-  await app.register(prismaPlugin);
-  await app.register(redisPlugin);
-  
-  // Register auth plugin
-  await app.register(authPlugin);
-  
-  // Register routes
-  await app.register(routes);
-  
-  return app;
-}
+app.register(cors, { origin: true });
 
-// Start server if run directly
+app.get('/health', async () => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return { status: 'ok', database: 'connected', timestamp: new Date().toISOString() };
+  } catch (e) {
+    return { status: 'degraded', database: 'disconnected' };
+  }
+});
+
 const start = async () => {
   try {
-    const server = await buildApp();
-    await server.listen({ port: config.PORT, host: '0.0.0.0' });
-    console.log(`Server running on port ${config.PORT}`);
+    await app.listen({ port: 3001, host: '0.0.0.0' });
+    console.log('LoanTrack API running on port 3001');
   } catch (err) {
     console.error(err);
     process.exit(1);
@@ -50,5 +27,3 @@ const start = async () => {
 };
 
 start();
-
-export default app;

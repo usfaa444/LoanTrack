@@ -1,5 +1,3 @@
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { Type } from '@sinclair/typebox';
 import { FastifyInstance } from 'fastify';
 import { verifyOtpService } from '../../services/auth.service';
 import { otpVerifySchema } from '../../schemas/auth.schema';

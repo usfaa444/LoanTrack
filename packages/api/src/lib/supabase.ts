@@ -1,53 +1,36 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { config } from '../config';
 
-// Create a single supabase admin client instance
-export const supabase = createClient(
-  config.supabaseUrl,
-  config.supabaseServiceRoleKey,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
+let _supabase: SupabaseClient | null = null;
+
+function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      throw new Error('Supabase not configured — set SUPABASE_URL and SUPABASE_ANON_KEY');
     }
+    _supabase = createClient(config.supabaseUrl, config.supabaseAnonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
   }
-);
-
-/**
- * Send OTP to a phone number via Supabase Auth
- * @param phone Phone number in E.164 format
- * @returns Promise resolving to success boolean
- */
-export async function sendOtp(phone: string): Promise<boolean> {
-  const { error } = await supabase.auth.signInWithOtp({
-    phone
-  });
-
-  if (error) {
-    console.error('Supabase OTP send error:', error);
-    return false;
-  }
-
-  return true;
+  return _supabase;
 }
 
-/**
- * Verify OTP code for a phone number
- * @param phone Phone number in E.164 format
- * @param code OTP code received by user
- * @returns Promise resolving to user object or null
- */
-export async function verifyOtp(phone: string, code: string): Promise<any | null> {
-  const { data, error } = await supabase.auth.verifyOtp({
-    phone,
-    token: code,
-    type: 'sms'
-  });
+export async function sendOtp(phone: string): Promise<boolean> {
+  try {
+    const { error } = await getSupabase().auth.signInWithOtp({ phone });
+    return !error;
+  } catch {
+    return false;
+  }
+}
 
-  if (error) {
-    console.error('Supabase OTP verify error:', error);
+export async function verifyOtp(phone: string, code: string): Promise<any | null> {
+  try {
+    const { data, error } = await getSupabase().auth.verifyOtp({
+      phone, token: code, type: 'sms',
+    });
+    return error ? null : data.user;
+  } catch {
     return null;
   }
-
-  return data.user;
 }

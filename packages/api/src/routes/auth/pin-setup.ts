@@ -1,5 +1,3 @@
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { Type } from '@sinclair/typebox';
 import { FastifyInstance } from 'fastify';
 import { setupPinService } from '../../services/auth.service';
 import { pinSetupSchema } from '../../schemas/auth.schema';

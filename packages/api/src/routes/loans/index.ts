@@ -1,5 +1,3 @@
-import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
-import { Type } from '@sinclair/typebox';
 import { FastifyInstance } from 'fastify';
 import { createLoan, getLoan, updateLoan, deleteLoan, listLoans, transitionLoanStatus } from '../../services/loan.service';
 import { loanCreateSchema, loanUpdateSchema } from '../../schemas/base.schema';

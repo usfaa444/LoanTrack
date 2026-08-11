@@ -1,7 +1,8 @@
 import fp from 'fastify-plugin';
-import db from '@loantrack/database';
+import { PrismaClient } from '@prisma/client';
 
-// Decorate Fastify instance with database client
+const db = new PrismaClient();
+
 export default fp(async (app) => {
   app.decorate('db', db);
   
@@ -9,10 +10,3 @@ export default fp(async (app) => {
     await db.$disconnect();
   });
 });
-
-// TypeScript declaration
-declare module 'fastify' {
-  interface FastifyInstance {
-    db: typeof db;
-  }
-}
