@@ -6,7 +6,7 @@ import EmptyState from '../../src/components/EmptyState';
 export default function ActivityScreen() {
   const { t } = useTranslation();
 
-  / Mock data - in a real app this would come from the API
+  // Mock data - in a real app this would come from the API
   const recentPayments = [
     {
       id: '1',

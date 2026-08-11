@@ -10,7 +10,7 @@ export default function LoanDetailScreen() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  / Mock data - in a real app this would come from the API
+  // Mock data - in a real app this would come from the API
   const loan = {
     id: id as string,
     borrower: 'Mamadou Diallo',

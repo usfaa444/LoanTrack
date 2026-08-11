@@ -20,7 +20,7 @@ export default function PinSetupScreen() {
       setStep('confirm');
     } else {
       if (enteredPin === pin) {
-        / Save PIN
+        // Save PIN
         await savePin(enteredPin);
       } else {
         Alert.alert(t('common.error'), t('auth.pin.setup.confirm'));

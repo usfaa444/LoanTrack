@@ -40,7 +40,7 @@ export default function OTPScreen() {
         setToken(response.data.token);
         setUser(response.data.user);
         
-        / Check if user has set up PIN
+        // Check if user has set up PIN
         if (response.data.hasPin) {
           router.push('/(tabs)/dashboard');
         } else {

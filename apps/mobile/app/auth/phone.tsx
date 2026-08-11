@@ -12,7 +12,7 @@ export default function PhoneAuthScreen() {
   const { t } = useTranslation();
 
   const validatePhone = (phone: string) => {
-    / Basic validation for Burkina Faso phone numbers
+    // Basic validation for Burkina Faso phone numbers
     const phoneRegex = /^(?:\+226|00226|226)?(?:\s)?[0-9]{8}$/;
     return phoneRegex.test(phone);
   };
@@ -25,7 +25,7 @@ export default function PhoneAuthScreen() {
 
     setLoading(true);
     try {
-      / Format phone number for API (E.164)
+      // Format phone number for API (E.164)
       let formattedPhone = phone;
       if (!phone.startsWith('+')) {
         formattedPhone = `+226${phone.replace(/^(00226|226)/, '')}`;

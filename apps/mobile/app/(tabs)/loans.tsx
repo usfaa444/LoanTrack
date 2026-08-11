@@ -10,7 +10,7 @@ export default function LoansScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
 
-  / Mock data - in a real app this would come from the API
+  // Mock data - in a real app this would come from the API
   const loans = [
     {
       id: '1',

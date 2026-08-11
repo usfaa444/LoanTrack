@@ -19,7 +19,7 @@ export default function RootLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   
   useEffect(() => {
-    / Initialize any required services here
+    // Initialize any required services here
   }, []);
 
   return (

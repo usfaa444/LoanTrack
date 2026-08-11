@@ -19,7 +19,7 @@ export default function PaymentScreen() {
       return;
     }
 
-    / In a real app, you would make an API call here
+    // In a real app, you would make an API call here
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
