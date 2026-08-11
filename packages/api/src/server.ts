@@ -5,10 +5,18 @@ import { config } from './config';
 import prismaPlugin from './plugins/prisma';
 import authPlugin from './plugins/auth';
 import errorHandlerPlugin from './plugins/error-handler';
+
+// Auth routes
 import otpSendRoutes from './routes/auth/otp-send';
 import otpVerifyRoutes from './routes/auth/otp-verify';
 import pinSetupRoutes from './routes/auth/pin-setup';
 import pinVerifyRoutes from './routes/auth/pin-verify';
+// Core routes
+import loansRoutes from './routes/loans';
+import paymentsRoutes from './routes/loans/payments';
+import dashboardRoutes from './routes/dashboard';
+import notificationsRoutes from './routes/notifications';
+import devicesRoutes from './routes/devices';
 
 const app = fastify({ logger: true });
 
@@ -24,13 +32,15 @@ async function buildApp() {
     catch { return { status: 'ok', db: 'disconnected' }; }
   });
 
-  // Auth routes (working)
   await app.register(otpSendRoutes, { prefix: '/v1/auth' });
   await app.register(otpVerifyRoutes, { prefix: '/v1/auth' });
   await app.register(pinSetupRoutes, { prefix: '/v1/auth' });
   await app.register(pinVerifyRoutes, { prefix: '/v1/auth' });
-
-  // TODO: Fix and register loan/payment/dashboard routes
+  await app.register(loansRoutes, { prefix: '/v1/loans' });
+  await app.register(paymentsRoutes, { prefix: '/v1/loans' });
+  await app.register(dashboardRoutes, { prefix: '/v1/dashboard' });
+  await app.register(notificationsRoutes, { prefix: '/v1/notifications' });
+  await app.register(devicesRoutes, { prefix: '/v1/devices' });
 
   return app;
 }
