@@ -1,17 +1,17 @@
-import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 import { Payment } from '../schemas/payment.schema';
 import { transitionLoanStatus } from './loan.service';
 
 /**
  * Record a payment for a loan
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param payment Payment data
  * @param userId User ID of recorder
  * @returns Promise resolving to created payment
  */
-export async function recordPayment(app: FastifyInstance, payment: Omit<Payment, 'id' | 'createdAt'>, userId: string): Promise<any> {
+export async function recordPayment(db: PrismaClient, payment: Omit<Payment, 'id' | 'createdAt'>, userId: string): Promise<any> {
   // Verify user has access to this loan
-  const loan = await app.db.loan.findUnique({
+  const loan = await db.loan.findUnique({
     where: {
       id: payment.loanId
     }
@@ -31,7 +31,7 @@ export async function recordPayment(app: FastifyInstance, payment: Omit<Payment,
   }
   
   // Create payment in database
-  const createdPayment = await app.db.payment.create({
+  const createdPayment = await db.payment.create({
     data: {
       ...payment,
       paidAt: payment.paidAt ? new Date(payment.paidAt) : new Date(),
@@ -62,7 +62,7 @@ export async function recordPayment(app: FastifyInstance, payment: Omit<Payment,
   }
   
   // Update loan
-  await app.db.loan.update({
+  await db.loan.update({
     where: {
       id: payment.loanId
     },
@@ -74,14 +74,14 @@ export async function recordPayment(app: FastifyInstance, payment: Omit<Payment,
 
 /**
  * List payments for a loan
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param loanId Loan ID
  * @param userId User ID
  * @returns Promise resolving to array of payments
  */
-export async function listPayments(app: FastifyInstance, loanId: string, userId: string): Promise<any[]> {
+export async function listPayments(db: PrismaClient, loanId: string, userId: string): Promise<any[]> {
   // Verify user has access to this loan
-  const loan = await app.db.loan.findUnique({
+  const loan = await db.loan.findUnique({
     where: {
       id: loanId
     }
@@ -96,7 +96,7 @@ export async function listPayments(app: FastifyInstance, loanId: string, userId:
   }
   
   // Get payments for loan
-  const payments = await app.db.payment.findMany({
+  const payments = await db.payment.findMany({
     where: {
       loanId: loanId
     },

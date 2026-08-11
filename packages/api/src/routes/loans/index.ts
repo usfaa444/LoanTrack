@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import { createLoan, getLoan, updateLoan, deleteLoan, listLoans, transitionLoanStatus } from '../../services/loan.service';
 import { loanCreateSchema, loanUpdateSchema } from '../../schemas/base.schema';
+import { PrismaClient } from '@prisma/client';
 
 export default async function routes(fastify: FastifyInstance) {
   // POST /v1/loans - Create a new loan
-  fastify.withTypeProvider<TypeBoxTypeProvider>().post(
+  fastify.post(
     '/',
     {
       schema: {
@@ -12,26 +13,47 @@ export default async function routes(fastify: FastifyInstance) {
         tags: ['loans'],
         body: loanCreateSchema,
         response: {
-          201: Type.Object({
-            id: Type.String(),
-            lenderId: Type.String(),
-            borrowerId: Type.String(),
-            amount: Type.Number(),
-            remainingBalance: Type.Number(),
-            currency: Type.String(),
-            purpose: Type.String(),
-            interestRate: Type.Number(),
-            status: Type.String(),
-            dueDate: Type.String(),
-            createdAt: Type.String(),
-            updatedAt: Type.String()
-          }),
-          400: Type.Object({
-            error: Type.String()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          })
+          201: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              lenderId: { type: 'string' },
+              borrowerId: { type: 'string' },
+              amount: { type: 'number' },
+              remainingBalance: { type: 'number' },
+              currency: { type: 'string' },
+              purpose: { type: 'string' },
+              interestRate: { type: 'number' },
+              status: { type: 'string' },
+              dueDate: { type: 'string' },
+              createdAt: { type: 'string' },
+              updatedAt: { type: 'string' }
+            }
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          403: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -39,7 +61,7 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const loanData = request.body;
+        const loanData = request.body as any;
         
         // User must be either lender or borrower
         if (userId !== loanData.lenderId && userId !== loanData.borrowerId) {
@@ -48,7 +70,7 @@ export default async function routes(fastify: FastifyInstance) {
           });
         }
         
-        const loan = await createLoan(fastify, loanData, userId);
+        const loan = await createLoan(fastify.db, loanData, userId);
         
         return reply.status(201).send(loan);
       } catch (error) {
@@ -61,36 +83,54 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // GET /v1/loans/:id - Get a specific loan
-  fastify.withTypeProvider<TypeBoxTypeProvider>().get(
+  fastify.get(
     '/:id',
     {
       schema: {
         description: 'Get a specific loan',
         tags: ['loans'],
-        params: Type.Object({
-          id: Type.String()
-        }),
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          }
+        },
         response: {
-          200: Type.Object({
-            id: Type.String(),
-            lenderId: Type.String(),
-            borrowerId: Type.String(),
-            amount: Type.Number(),
-            remainingBalance: Type.Number(),
-            currency: Type.String(),
-            purpose: Type.String(),
-            interestRate: Type.Number(),
-            status: Type.String(),
-            dueDate: Type.String(),
-            createdAt: Type.String(),
-            updatedAt: Type.String()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          }),
-          404: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              lenderId: { type: 'string' },
+              borrowerId: { type: 'string' },
+              amount: { type: 'number' },
+              remainingBalance: { type: 'number' },
+              currency: { type: 'string' },
+              purpose: { type: 'string' },
+              interestRate: { type: 'number' },
+              status: { type: 'string' },
+              dueDate: { type: 'string' },
+              createdAt: { type: 'string' },
+              updatedAt: { type: 'string' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -98,9 +138,9 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { id } = request.params;
+        const { id } = request.params as { id: string };
         
-        const loan = await getLoan(fastify, id, userId);
+        const loan = await getLoan(fastify.db, id, userId);
         
         if (!loan) {
           return reply.status(404).send({
@@ -119,40 +159,61 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // PUT /v1/loans/:id - Update a loan
-  fastify.withTypeProvider<TypeBoxTypeProvider>().put(
+  fastify.put(
     '/:id',
     {
       schema: {
         description: 'Update a loan',
         tags: ['loans'],
-        params: Type.Object({
-          id: Type.String()
-        }),
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          }
+        },
         body: loanUpdateSchema,
         response: {
-          200: Type.Object({
-            id: Type.String(),
-            lenderId: Type.String(),
-            borrowerId: Type.String(),
-            amount: Type.Number(),
-            remainingBalance: Type.Number(),
-            currency: Type.String(),
-            purpose: Type.String(),
-            interestRate: Type.Number(),
-            status: Type.String(),
-            dueDate: Type.String(),
-            createdAt: Type.String(),
-            updatedAt: Type.String()
-          }),
-          400: Type.Object({
-            error: Type.String()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          }),
-          404: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              lenderId: { type: 'string' },
+              borrowerId: { type: 'string' },
+              amount: { type: 'number' },
+              remainingBalance: { type: 'number' },
+              currency: { type: 'string' },
+              purpose: { type: 'string' },
+              interestRate: { type: 'number' },
+              status: { type: 'string' },
+              dueDate: { type: 'string' },
+              createdAt: { type: 'string' },
+              updatedAt: { type: 'string' }
+            }
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -160,10 +221,10 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { id } = request.params;
-        const updates = request.body;
+        const { id } = request.params as { id: string };
+        const updates = request.body as any;
         
-        const loan = await updateLoan(fastify, id, updates, userId);
+        const loan = await updateLoan(fastify.db, id, updates, userId);
         
         return loan;
       } catch (error: any) {
@@ -182,25 +243,43 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // DELETE /v1/loans/:id - Delete a loan (soft delete)
-  fastify.withTypeProvider<TypeBoxTypeProvider>().delete(
+  fastify.delete(
     '/:id',
     {
       schema: {
         description: 'Delete a loan',
         tags: ['loans'],
-        params: Type.Object({
-          id: Type.String()
-        }),
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          }
+        },
         response: {
-          200: Type.Object({
-            success: Type.Boolean()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          }),
-          404: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -208,9 +287,9 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { id } = request.params;
+        const { id } = request.params as { id: string };
         
-        await deleteLoan(fastify, id, userId);
+        await deleteLoan(fastify.db, id, userId);
         
         return { success: true };
       } catch (error: any) {
@@ -229,35 +308,53 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // GET /v1/loans - List loans with filters
-  fastify.withTypeProvider<TypeBoxTypeProvider>().get(
+  fastify.get(
     '/',
     {
       schema: {
         description: 'List loans with filters',
         tags: ['loans'],
-        querystring: Type.Object({
-          status: Type.Optional(Type.String()),
-          asLender: Type.Optional(Type.Boolean()),
-          asBorrower: Type.Optional(Type.Boolean())
-        }),
+        querystring: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            asLender: { type: 'boolean' },
+            asBorrower: { type: 'boolean' }
+          }
+        },
         response: {
-          200: Type.Array(Type.Object({
-            id: Type.String(),
-            lenderId: Type.String(),
-            borrowerId: Type.String(),
-            amount: Type.Number(),
-            remainingBalance: Type.Number(),
-            currency: Type.String(),
-            purpose: Type.String(),
-            interestRate: Type.Number(),
-            status: Type.String(),
-            dueDate: Type.String(),
-            createdAt: Type.String(),
-            updatedAt: Type.String()
-          })),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                lenderId: { type: 'string' },
+                borrowerId: { type: 'string' },
+                amount: { type: 'number' },
+                remainingBalance: { type: 'number' },
+                currency: { type: 'string' },
+                purpose: { type: 'string' },
+                interestRate: { type: 'number' },
+                status: { type: 'string' },
+                dueDate: { type: 'string' },
+                createdAt: { type: 'string' },
+                updatedAt: { type: 'string' }
+              }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -265,14 +362,14 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { status, asLender, asBorrower } = request.query;
+        const { status, asLender, asBorrower } = request.query as { status?: string; asLender?: boolean; asBorrower?: boolean };
         
         const filters: any = {};
         if (status) filters.status = status;
         if (asLender) filters.asLender = asLender;
         if (asBorrower) filters.asBorrower = asBorrower;
         
-        const loans = await listLoans(fastify, userId, filters);
+        const loans = await listLoans(fastify.db, userId, filters);
         
         return loans;
       } catch (error) {

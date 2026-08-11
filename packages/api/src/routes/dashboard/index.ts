@@ -1,30 +1,37 @@
 import { FastifyInstance } from 'fastify';
 import { getDashboardStats } from '../../services/dashboard.service';
+import { PrismaClient } from '@prisma/client';
 
 export default async function routes(fastify: FastifyInstance) {
   // GET /v1/dashboard - Get dashboard statistics
-  fastify.withTypeProvider<TypeBoxTypeProvider>().get(
+  fastify.get(
     '/',
     {
       schema: {
         description: 'Get dashboard statistics',
         tags: ['dashboard'],
         response: {
-          200: Type.Object({
-            activeLoansAsLender: Type.Number(),
-            activeLoansAsBorrower: Type.Number(),
-            overdueLoansAsLender: Type.Number(),
-            overdueLoansAsBorrower: Type.Number(),
-            paidLoansAsLender: Type.Number(),
-            paidLoansAsBorrower: Type.Number(),
-            totalLent: Type.Number(),
-            totalBorrowed: Type.Number(),
-            totalRepaidToUser: Type.Number(),
-            totalRepaidByUser: Type.Number()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              activeLoansAsLender: { type: 'number' },
+              activeLoansAsBorrower: { type: 'number' },
+              overdueLoansAsLender: { type: 'number' },
+              overdueLoansAsBorrower: { type: 'number' },
+              paidLoansAsLender: { type: 'number' },
+              paidLoansAsBorrower: { type: 'number' },
+              totalLent: { type: 'number' },
+              totalBorrowed: { type: 'number' },
+              totalRepaidToUser: { type: 'number' },
+              totalRepaidByUser: { type: 'number' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -33,7 +40,7 @@ export default async function routes(fastify: FastifyInstance) {
       try {
         const userId = (request.user as any).id;
         
-        const stats = await getDashboardStats(fastify, userId);
+        const stats = await getDashboardStats(fastify.db as unknown as PrismaClient, userId);
         
         return stats;
       } catch (error) {

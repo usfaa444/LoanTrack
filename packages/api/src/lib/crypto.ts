@@ -29,8 +29,7 @@ export function encryptPhone(phone: string): string {
   const iv = crypto.randomBytes(16);
   
   // Create cipher
-  const cipher = crypto.createCipher(algorithm, key);
-  cipher.setAAD(iv); // Use IV as AAD
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
   
   let encrypted = cipher.update(phone, 'utf8', 'base64');
   encrypted += cipher.final('base64');
@@ -67,8 +66,7 @@ export function decryptPhone(encryptedPhone: string): string | null {
     const encrypted = data.subarray(32);
     
     // Create decipher
-    const decipher = crypto.createDecipher(algorithm, key);
-    decipher.setAAD(iv); // Use IV as AAD
+    const decipher = crypto.createDecipheriv(algorithm, key, iv);
     decipher.setAuthTag(authTag);
     
     let decrypted = decipher.update(encrypted.toString('base64'), 'base64', 'utf8');

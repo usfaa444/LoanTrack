@@ -1,8 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Create a notification for a user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @param type Notification type
  * @param title Notification title
@@ -11,14 +11,14 @@ import { FastifyInstance } from 'fastify';
  * @returns Promise resolving to notification record
  */
 export async function createNotification(
-  app: FastifyInstance,
+  db: PrismaClient,
   userId: string,
   type: string,
   title: string,
   body: string,
   data?: any
 ): Promise<any> {
-  const notification = await app.db.notificationLog.create({
+  const notification = await db.notificationLog.create({
     data: {
       userId: userId,
       type: type,
@@ -36,19 +36,19 @@ export async function createNotification(
 
 /**
  * List notifications for a user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @param limit Number of notifications to return (default: 20)
  * @param offset Offset for pagination (default: 0)
  * @returns Promise resolving to array of notifications
  */
 export async function listNotifications(
-  app: FastifyInstance,
+  db: PrismaClient,
   userId: string,
   limit: number = 20,
   offset: number = 0
 ): Promise<any[]> {
-  const notifications = await app.db.notificationLog.findMany({
+  const notifications = await db.notificationLog.findMany({
     where: {
       userId: userId
     },
@@ -64,17 +64,17 @@ export async function listNotifications(
 
 /**
  * Mark a notification as read
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param notificationId Notification ID
  * @param userId User ID (for verification)
  * @returns Promise resolving to updated notification
  */
 export async function markNotificationRead(
-  app: FastifyInstance,
+  db: PrismaClient,
   notificationId: string,
   userId: string
 ): Promise<any> {
-  const notification = await app.db.notificationLog.update({
+  const notification = await db.notificationLog.update({
     where: {
       id: notificationId,
       userId: userId
@@ -90,15 +90,15 @@ export async function markNotificationRead(
 
 /**
  * Mark all notifications as read for a user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @returns Promise resolving to count of updated notifications
  */
 export async function markAllNotificationsRead(
-  app: FastifyInstance,
+  db: PrismaClient,
   userId: string
 ): Promise<number> {
-  const result = await app.db.notificationLog.updateMany({
+  const result = await db.notificationLog.updateMany({
     where: {
       userId: userId,
       isRead: false

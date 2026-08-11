@@ -1,14 +1,14 @@
-import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 
 /**
  * Get dashboard statistics for a user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @returns Promise resolving to dashboard data
  */
-export async function getDashboardStats(app: FastifyInstance, userId: string): Promise<any> {
+export async function getDashboardStats(db: PrismaClient, userId: string): Promise<any> {
   // Get count of active loans as lender
-  const activeLoansAsLender = await app.db.loan.count({
+  const activeLoansAsLender = await db.loan.count({
     where: {
       lenderId: userId,
       status: 'ACTIVE',
@@ -17,7 +17,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get count of active loans as borrower
-  const activeLoansAsBorrower = await app.db.loan.count({
+  const activeLoansAsBorrower = await db.loan.count({
     where: {
       borrowerId: userId,
       status: 'ACTIVE',
@@ -26,7 +26,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get count of overdue loans as lender
-  const overdueLoansAsLender = await app.db.loan.count({
+  const overdueLoansAsLender = await db.loan.count({
     where: {
       lenderId: userId,
       status: 'OVERDUE',
@@ -35,7 +35,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get count of overdue loans as borrower
-  const overdueLoansAsBorrower = await app.db.loan.count({
+  const overdueLoansAsBorrower = await db.loan.count({
     where: {
       borrowerId: userId,
       status: 'OVERDUE',
@@ -44,7 +44,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get count of paid loans as lender
-  const paidLoansAsLender = await app.db.loan.count({
+  const paidLoansAsLender = await db.loan.count({
     where: {
       lenderId: userId,
       status: 'PAID',
@@ -53,7 +53,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get count of paid loans as borrower
-  const paidLoansAsBorrower = await app.db.loan.count({
+  const paidLoansAsBorrower = await db.loan.count({
     where: {
       borrowerId: userId,
       status: 'PAID',
@@ -62,7 +62,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   });
   
   // Get total amount lent (active + paid + overdue)
-  const totalLentResult = await app.db.loan.aggregate({
+  const totalLentResult = await db.loan.aggregate({
     where: {
       lenderId: userId,
       status: {
@@ -78,7 +78,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   const totalLent = totalLentResult._sum.amount || 0;
   
   // Get total amount borrowed (active + paid + overdue)
-  const totalBorrowedResult = await app.db.loan.aggregate({
+  const totalBorrowedResult = await db.loan.aggregate({
     where: {
       borrowerId: userId,
       status: {
@@ -94,7 +94,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   const totalBorrowed = totalBorrowedResult._sum.amount || 0;
   
   // Get total amount repaid to user
-  const paymentsReceivedResult = await app.db.payment.aggregate({
+  const paymentsReceivedResult = await db.payment.aggregate({
     where: {
       loan: {
         lenderId: userId
@@ -108,7 +108,7 @@ export async function getDashboardStats(app: FastifyInstance, userId: string): P
   const totalRepaidToUser = paymentsReceivedResult._sum.amount || 0;
   
   // Get total amount repaid by user
-  const paymentsMadeResult = await app.db.payment.aggregate({
+  const paymentsMadeResult = await db.payment.aggregate({
     where: {
       loan: {
         borrowerId: userId

@@ -10,3 +10,10 @@ export default fp(async (app) => {
     await db.$disconnect();
   });
 });
+
+// TypeScript declaration
+declare module 'fastify' {
+  interface FastifyInstance {
+    db: PrismaClient;
+  }
+}

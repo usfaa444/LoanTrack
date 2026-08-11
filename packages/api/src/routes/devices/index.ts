@@ -1,28 +1,42 @@
 import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 
 export default async function routes(fastify: FastifyInstance) {
   // POST /v1/devices/register - Register FCM token
-  fastify.withTypeProvider<TypeBoxTypeProvider>().post(
+  fastify.post(
     '/register',
     {
       schema: {
         description: 'Register FCM device token',
         tags: ['devices'],
-        body: Type.Object({
-          token: Type.String(),
-          platform: Type.Union([Type.Literal('ios'), Type.Literal('android')]),
-          deviceName: Type.Optional(Type.String())
-        }),
+        body: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            deviceName: { type: 'string' }
+          },
+          required: ['token', 'platform']
+        },
         response: {
-          200: Type.Object({
-            success: Type.Boolean()
-          }),
-          400: Type.Object({
-            error: Type.String()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' }
+            }
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -30,10 +44,10 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { token, platform, deviceName } = request.body;
+        const { token, platform, deviceName } = request.body as { token: string; platform: 'ios' | 'android'; deviceName?: string };
         
         // Upsert device token
-        await fastify.db.deviceToken.upsert({
+        await (fastify.db as unknown as PrismaClient).deviceToken.upsert({
           where: {
             userId_token: {
               userId: userId,
@@ -66,25 +80,38 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // POST /v1/devices/unregister - Unregister FCM token
-  fastify.withTypeProvider<TypeBoxTypeProvider>().post(
+  fastify.post(
     '/unregister',
     {
       schema: {
         description: 'Unregister FCM device token',
         tags: ['devices'],
-        body: Type.Object({
-          token: Type.String()
-        }),
+        body: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' }
+          },
+          required: ['token']
+        },
         response: {
-          200: Type.Object({
-            success: Type.Boolean()
-          }),
-          400: Type.Object({
-            error: Type.String()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' }
+            }
+          },
+          400: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -92,10 +119,10 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { token } = request.body;
+        const { token } = request.body as { token: string };
         
         // Delete device token
-        await fastify.db.deviceToken.delete({
+        await (fastify.db as unknown as PrismaClient).deviceToken.delete({
           where: {
             userId_token: {
               userId: userId,

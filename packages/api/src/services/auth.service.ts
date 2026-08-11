@@ -1,14 +1,14 @@
-import { FastifyInstance } from 'fastify';
+import { PrismaClient } from '@prisma/client';
 import { sendOtp, verifyOtp } from '../lib/supabase';
-import { hashPhone, hashPin } from '../lib/crypto';
+import { hashPhone, hashPin, verifyPin } from '../lib/crypto';
 
 /**
  * Send OTP to a phone number
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param phone Phone number in E.164 format
  * @returns Promise resolving to success boolean
  */
-export async function sendOtpService(app: FastifyInstance, phone: string): Promise<boolean> {
+export async function sendOtpService(db: PrismaClient, phone: string): Promise<boolean> {
   // Send OTP via Supabase
   const success = await sendOtp(phone);
   
@@ -21,12 +21,12 @@ export async function sendOtpService(app: FastifyInstance, phone: string): Promi
 
 /**
  * Verify OTP and upsert user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param phone Phone number in E.164 format
  * @param code OTP code
  * @returns Promise resolving to user object or null
  */
-export async function verifyOtpService(app: FastifyInstance, phone: string, code: string): Promise<any | null> {
+export async function verifyOtpService(db: PrismaClient, phone: string, code: string): Promise<any | null> {
   // Verify OTP via Supabase
   const user = await verifyOtp(phone, code);
   
@@ -38,7 +38,7 @@ export async function verifyOtpService(app: FastifyInstance, phone: string, code
   const phoneHash = hashPhone(phone);
   
   // Upsert user in database
-  const dbUser = await app.db.user.upsert({
+  const dbUser = await db.user.upsert({
     where: {
       phoneHash: phoneHash
     },
@@ -62,18 +62,18 @@ export async function verifyOtpService(app: FastifyInstance, phone: string, code
 
 /**
  * Set up PIN for a user
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @param pin 4-digit PIN
  * @returns Promise resolving to success boolean
  */
-export async function setupPinService(app: FastifyInstance, userId: string, pin: string): Promise<boolean> {
+export async function setupPinService(db: PrismaClient, userId: string, pin: string): Promise<boolean> {
   // Hash the PIN
   const pinHash = await hashPin(pin);
   
   try {
     // Update user with PIN hash
-    await app.db.user.update({
+    await db.user.update({
       where: {
         id: userId
       },
@@ -95,15 +95,15 @@ export async function setupPinService(app: FastifyInstance, userId: string, pin:
 
 /**
  * Verify user PIN
- * @param app Fastify instance
+ * @param db Prisma client instance
  * @param userId User ID
  * @param pin 4-digit PIN
  * @returns Promise resolving to success boolean
  */
-export async function verifyPinService(app: FastifyInstance, userId: string, pin: string): Promise<boolean> {
+export async function verifyPinService(db: PrismaClient, userId: string, pin: string): Promise<boolean> {
   try {
     // Get user with PIN hash
-    const user = await app.db.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         id: userId
       },
@@ -124,12 +124,12 @@ export async function verifyPinService(app: FastifyInstance, userId: string, pin
     }
     
     // Verify PIN
-    const isValid = await hashPin(pin) === user.pinHash;
+    const isValid = await verifyPin(pin, user.pinHash);
     
     // Update PIN attempts
     if (isValid) {
       // Reset attempts on success
-      await app.db.user.update({
+      await db.user.update({
         where: {
           id: userId
         },
@@ -144,7 +144,7 @@ export async function verifyPinService(app: FastifyInstance, userId: string, pin
       const newAttempts = user.pinAttempts + 1;
       const lockUntil = newAttempts >= 3 ? new Date(Date.now() + 30 * 60 * 1000) : null; // 30 min lock
       
-      await app.db.user.update({
+      await db.user.update({
         where: {
           id: userId
         },

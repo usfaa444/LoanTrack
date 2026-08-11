@@ -4,36 +4,49 @@ import {
   markNotificationRead,
   markAllNotificationsRead
 } from '../../services/notification.service';
+import { PrismaClient } from '@prisma/client';
 
 export default async function routes(fastify: FastifyInstance) {
   // GET /v1/notifications - List notifications
-  fastify.withTypeProvider<TypeBoxTypeProvider>().get(
+  fastify.get(
     '/',
     {
       schema: {
         description: 'List notifications',
         tags: ['notifications'],
-        querystring: Type.Object({
-          limit: Type.Optional(Type.Number()),
-          offset: Type.Optional(Type.Number())
-        }),
+        querystring: {
+          type: 'object',
+          properties: {
+            limit: { type: 'number' },
+            offset: { type: 'number' }
+          }
+        },
         response: {
-          200: Type.Array(Type.Object({
-            id: Type.String(),
-            userId: Type.String(),
-            type: Type.String(),
-            title: Type.String(),
-            body: Type.String(),
-            data: Type.Optional(Type.Any()),
-            isRead: Type.Boolean(),
-            sentAt: Type.String(),
-            readAt: Type.Optional(Type.String()),
-            channel: Type.String(),
-            externalId: Type.Optional(Type.String())
-          })),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                userId: { type: 'string' },
+                type: { type: 'string' },
+                title: { type: 'string' },
+                body: { type: 'string' },
+                data: { },
+                isRead: { type: 'boolean' },
+                sentAt: { type: 'string' },
+                readAt: { type: 'string' },
+                channel: { type: 'string' },
+                externalId: { type: 'string' }
+              }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -41,9 +54,9 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { limit = 20, offset = 0 } = request.query;
+        const { limit = 20, offset = 0 } = request.query as { limit?: number; offset?: number };
         
-        const notifications = await listNotifications(fastify, userId, limit, offset);
+        const notifications = await listNotifications(fastify.db as unknown as PrismaClient, userId, limit, offset);
         
         return notifications;
       } catch (error) {
@@ -56,25 +69,37 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // POST /v1/notifications/:id/read - Mark notification as read
-  fastify.withTypeProvider<TypeBoxTypeProvider>().post(
+  fastify.post(
     '/:id/read',
     {
       schema: {
         description: 'Mark notification as read',
         tags: ['notifications'],
-        params: Type.Object({
-          id: Type.String()
-        }),
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          }
+        },
         response: {
-          200: Type.Object({
-            success: Type.Boolean()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          }),
-          404: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -82,9 +107,9 @@ export default async function routes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const userId = (request.user as any).id;
-        const { id } = request.params;
+        const { id } = request.params as { id: string };
         
-        await markNotificationRead(fastify, id, userId);
+        await markNotificationRead(fastify.db as unknown as PrismaClient, id, userId);
         
         return { success: true };
       } catch (error: any) {
@@ -103,20 +128,26 @@ export default async function routes(fastify: FastifyInstance) {
   );
   
   // POST /v1/notifications/read-all - Mark all notifications as read
-  fastify.withTypeProvider<TypeBoxTypeProvider>().post(
+  fastify.post(
     '/read-all',
     {
       schema: {
         description: 'Mark all notifications as read',
         tags: ['notifications'],
         response: {
-          200: Type.Object({
-            success: Type.Boolean(),
-            count: Type.Number()
-          }),
-          401: Type.Object({
-            error: Type.String()
-          })
+          200: {
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              count: { type: 'number' }
+            }
+          },
+          401: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' }
+            }
+          }
         }
       },
       onRequest: fastify.authenticate
@@ -125,7 +156,7 @@ export default async function routes(fastify: FastifyInstance) {
       try {
         const userId = (request.user as any).id;
         
-        const count = await markAllNotificationsRead(fastify, userId);
+        const count = await markAllNotificationsRead(fastify.db as unknown as PrismaClient, userId);
         
         return {
           success: true,

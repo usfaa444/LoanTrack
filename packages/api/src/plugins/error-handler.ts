@@ -2,7 +2,7 @@ import fp from 'fastify-plugin';
 
 // Error handler plugin
 export default fp(async (app) => {
-  app.setErrorHandler((error, request, reply) => {
+  app.setErrorHandler((error: any, request: any, reply: any) => {
     // Log the error
     app.log.error(error);
     
