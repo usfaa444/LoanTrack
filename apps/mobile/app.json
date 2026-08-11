@@ -8,8 +8,7 @@
     "userInterfaceStyle": "light",
     "scheme": "loantrack",
     "plugins": [
-      "expo-router",
-      "nativewind"
+      "expo-router"
     ],
     "splash": {
       "image": "./assets/splash.png",
