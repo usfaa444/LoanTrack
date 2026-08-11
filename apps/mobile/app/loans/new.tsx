@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import CurrencyInput from '@/src/components/CurrencyInput';
+import CurrencyInput from '../../src/components/CurrencyInput';
 
 export default function NewLoanScreen() {
   const [borrowerPhone, setBorrowerPhone] = useState('');
@@ -19,7 +19,7 @@ export default function NewLoanScreen() {
       return;
     }
 
-    // In a real app, you would make an API call here
+    / In a real app, you would make an API call here
     setLoading(true);
     setTimeout(() => {
       setLoading(false);

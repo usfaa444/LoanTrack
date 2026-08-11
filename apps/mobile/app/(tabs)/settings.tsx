@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/src/stores/authStore';
+import { useAuthStore } from '../../src/stores/authStore';
 
 export default function SettingsScreen() {
   const { t } = useTranslation();

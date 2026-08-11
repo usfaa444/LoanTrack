@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/src/stores/authStore';
-import { api } from '@/src/lib/api';
+import { useAuthStore } from '../../src/stores/authStore';
+import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
 
 export default function ProfileSetupScreen() {
@@ -22,7 +22,7 @@ export default function ProfileSetupScreen() {
     try {
       const response = await api.post('/auth/update-profile', {
         name: name.trim(),
-        currency: 'XOF', // Default to XOF for Burkina Faso
+        currency: 'XOF', / Default to XOF for Burkina Faso
       });
 
       if (response.data.user) {

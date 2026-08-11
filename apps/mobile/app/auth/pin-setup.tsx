@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/src/stores/authStore';
-import PinPad from '@/src/components/PinPad';
-import { api } from '@/src/lib/api';
+import { useAuthStore } from '../../src/stores/authStore';
+import PinPad from '../../src/components/PinPad';
+import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
 
 export default function PinSetupScreen() {
@@ -20,7 +20,7 @@ export default function PinSetupScreen() {
       setStep('confirm');
     } else {
       if (enteredPin === pin) {
-        // Save PIN
+        / Save PIN
         await savePin(enteredPin);
       } else {
         Alert.alert(t('common.error'), t('auth.pin.setup.confirm'));
@@ -75,7 +75,7 @@ export default function PinSetupScreen() {
         onPinEnter={handlePinEntered}
         onBack={handleBack}
         loading={loading}
-        length={4} // 4-digit PIN
+        length={4} / 4-digit PIN
       />
     </View>
   );

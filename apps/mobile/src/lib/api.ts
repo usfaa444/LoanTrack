@@ -1,7 +1,7 @@
-import { useAuthStore } from '@/src/stores/authStore';
-import { usePinStore } from '@/src/stores/pinStore';
+import { useAuthStore } from '../../src/stores/authStore';
+import { usePinStore } from '../../src/stores/pinStore';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.loantracker.example';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https:/api.loantracker.example';
 
 interface ApiError {
   message: string;

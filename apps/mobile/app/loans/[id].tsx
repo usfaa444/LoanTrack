@@ -2,15 +2,15 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import StatusBadge from '@/src/components/StatusBadge';
-import PaymentTimeline from '@/src/components/PaymentTimeline';
+import StatusBadge from '../../src/components/StatusBadge';
+import PaymentTimeline from '../../src/components/PaymentTimeline';
 
 export default function LoanDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { t } = useTranslation();
 
-  // Mock data - in a real app this would come from the API
+  / Mock data - in a real app this would come from the API
   const loan = {
     id: id as string,
     borrower: 'Mamadou Diallo',

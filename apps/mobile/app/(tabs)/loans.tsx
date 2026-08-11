@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import LoanCard from '@/src/components/LoanCard';
-import EmptyState from '@/src/components/EmptyState';
+import LoanCard from '../../src/components/LoanCard';
+import EmptyState from '../../src/components/EmptyState';
 
 export default function LoansScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('all');
 
-  // Mock data - in a real app this would come from the API
+  / Mock data - in a real app this would come from the API
   const loans = [
     {
       id: '1',

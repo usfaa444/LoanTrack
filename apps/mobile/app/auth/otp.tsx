@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuthStore } from '@/src/stores/authStore';
-import { api } from '@/src/lib/api';
+import { useAuthStore } from '../../src/stores/authStore';
+import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
 
 export default function OTPScreen() {
@@ -40,7 +40,7 @@ export default function OTPScreen() {
         setToken(response.data.token);
         setUser(response.data.user);
         
-        // Check if user has set up PIN
+        / Check if user has set up PIN
         if (response.data.hasPin) {
           router.push('/(tabs)/dashboard');
         } else {
@@ -62,7 +62,7 @@ export default function OTPScreen() {
     try {
       const response = await api.post('/auth/send-otp', { phone });
       if (response.data.success) {
-        setResendCooldown(60); // 60 second cooldown
+        setResendCooldown(60); / 60 second cooldown
         Alert.alert(t('common.success'), t('auth.otp.resend'));
       } else {
         Alert.alert(t('common.error'), response.message || t('common.error'));
