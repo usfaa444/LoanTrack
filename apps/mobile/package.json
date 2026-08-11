@@ -25,7 +25,13 @@
     "expo-local-authentication": "~14.0.0",
     "expo-notifications": "~0.29.0",
     "expo-sqlite": "~15.0.0",
-    "@react-native-community/netinfo": "11.4.0"
+    "@react-native-community/netinfo": "11.4.0",
+    "expo-asset": "~10.0.0",
+    "expo-constants": "~17.0.0",
+    "expo-linking": "~7.0.0",
+    "expo-status-bar": "~2.0.0",
+    "expo-font": "~13.0.0",
+    "expo-splash-screen": "~0.29.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
