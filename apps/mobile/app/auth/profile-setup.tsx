@@ -40,7 +40,7 @@ export default function ProfileSetupScreen() {
   };
 
   return (
-    <View theme.colors.surface, paddingHorizontal: theme.spacing.xl, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.surface, paddingHorizontal: theme.spacing.xl, justifyContent: 'center', alignItems: 'center' }}>
       <MaterialIcons name="account-circle" size={80} color={theme.colors.border} style={{ marginBottom: theme.spacing.xxl }} />
       <Text style={styles.title}>{t('auth.profile.title')}</Text>
       <Text style={styles.subtitle}>{t('auth.profile.namePlaceholder')}</Text>
