@@ -1,0 +1,127 @@
+{
+  "common": {
+    "appName": "Loan Tracker",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "done": "Terminé",
+    "retry": "Réessayer",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "success": "Succès",
+    "warning": "Avertissement"
+  },
+  "auth": {
+    "phone": {
+      "title": "Numéro de téléphone",
+      "placeholder": "Entrez votre numéro",
+      "continue": "Continuer",
+      "validation": "Veuillez entrer un numéro de téléphone valide"
+    },
+    "otp": {
+      "title": "Vérification",
+      "instruction": "Entrez le code envoyé à {{phone}}",
+      "placeholder": "Code à 6 chiffres",
+      "resend": "Renvoyer le code",
+      "resendIn": "Renvoyer dans {{time}}s",
+      "verify": "Vérifier"
+    },
+    "pin": {
+      "setup": {
+        "title": "Configurer le code PIN",
+        "instruction": "Créez un code PIN pour sécuriser votre compte",
+        "confirm": "Confirmez votre code PIN"
+      },
+      "login": {
+        "title": "Entrez votre code PIN",
+        "forgot": "Code PIN oublié?"
+      }
+    },
+    "profile": {
+      "title": "Profil",
+      "name": "Nom complet",
+      "namePlaceholder": "Entrez votre nom",
+      "currency": "Devise par défaut",
+      "avatar": "Photo de profil"
+    }
+  },
+  "tabs": {
+    "dashboard": "Tableau de bord",
+    "loans": "Prêts",
+    "activity": "Activité",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "activeLoans": "Prêts actifs",
+    "totalOutstanding": "Total restant",
+    "totalPaid": "Total payé",
+    "nextDue": "Prochain échéance",
+    "quickActions": "Actions rapides",
+    "addLoan": "Ajouter un prêt"
+  },
+  "loans": {
+    "title": "Prêts",
+    "new": "Nouveau prêt",
+    "empty": "Aucun prêt pour le moment",
+    "tabs": {
+      "all": "Tous",
+      "active": "Actifs",
+      "paid": "Payés",
+      "overdue": "En retard"
+    },
+    "form": {
+      "borrower": "Téléphone de l'emprunteur",
+      "amount": "Montant (XOF)",
+      "purpose": "Objectif",
+      "dueDate": "Date d'échéance",
+      "submit": "Créer le prêt"
+    },
+    "detail": {
+      "status": "Statut",
+      "amount": "Montant",
+      "remaining": "Restant",
+      "payments": "Paiements",
+      "addPayment": "Ajouter un paiement"
+    },
+    "payment": {
+      "title": "Enregistrer un paiement",
+      "amount": "Montant",
+      "method": "Méthode",
+      "note": "Note",
+      "submit": "Enregistrer le paiement"
+    }
+  },
+  "activity": {
+    "title": "Activité",
+    "payments": "Paiements récents",
+    "reminders": "Rappels",
+    "notifications": "Notifications"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "profile": "Profil",
+    "currency": "Devise",
+    "language": "Langue",
+    "notifications": "Notifications",
+    "security": "Sécurité",
+    "logout": "Déconnexion"
+  },
+  "components": {
+    "pinPad": {
+      "enterPin": "Entrez votre code PIN",
+      "forgotPin": "Code PIN oublié?"
+    },
+    "statusBadge": {
+      "active": "Actif",
+      "paid": "Payé",
+      "overdue": "En retard"
+    },
+    "emptyState": {
+      "noData": "Aucune donnée",
+      "tryAgain": "Veuillez réessayer plus tard"
+    }
+  }
+}

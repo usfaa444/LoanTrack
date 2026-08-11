@@ -1,0 +1,109 @@
+import { FastifyInstance } from 'fastify';
+import { Payment } from '../schemas/payment.schema';
+import { transitionLoanStatus } from './loan.service';
+
+/**
+ * Record a payment for a loan
+ * @param app Fastify instance
+ * @param payment Payment data
+ * @param userId User ID of recorder
+ * @returns Promise resolving to created payment
+ */
+export async function recordPayment(app: FastifyInstance, payment: Omit<Payment, 'id' | 'createdAt'>, userId: string): Promise<any> {
+  // Verify user has access to this loan
+  const loan = await app.db.loan.findUnique({
+    where: {
+      id: payment.loanId
+    }
+  });
+  
+  if (!loan) {
+    throw new Error('Loan not found');
+  }
+  
+  if (loan.lenderId !== userId && loan.borrowerId !== userId) {
+    throw new Error('User does not have access to this loan');
+  }
+  
+  // Check if loan is in a valid state for payments
+  if (loan.status !== 'ACTIVE' && loan.status !== 'OVERDUE') {
+    throw new Error('Cannot record payment for loan in current status');
+  }
+  
+  // Create payment in database
+  const createdPayment = await app.db.payment.create({
+    data: {
+      ...payment,
+      paidAt: payment.paidAt ? new Date(payment.paidAt) : new Date(),
+      createdAt: new Date(),
+      recordedById: userId
+    }
+  });
+  
+  // Update loan remaining balance
+  const newBalance = loan.remainingBalance - payment.amount;
+  
+  // Prepare loan update data
+  const loanUpdateData: any = {
+    remainingBalance: newBalance,
+    updatedAt: new Date()
+  };
+  
+  // If balance is zero or negative, transition to PAID
+  if (newBalance <= 0) {
+    loanUpdateData.status = 'PAID';
+    loanUpdateData.paidAt = new Date();
+  } else if (loan.status === 'OVERDUE' && newBalance > 0) {
+    // If partially paid overdue loan, keep it as OVERDUE
+    loanUpdateData.status = 'OVERDUE';
+  } else if (loan.status === 'ACTIVE' && newBalance > 0) {
+    // Keep ACTIVE status for partial payments
+    loanUpdateData.status = 'ACTIVE';
+  }
+  
+  // Update loan
+  await app.db.loan.update({
+    where: {
+      id: payment.loanId
+    },
+    data: loanUpdateData
+  });
+  
+  return createdPayment;
+}
+
+/**
+ * List payments for a loan
+ * @param app Fastify instance
+ * @param loanId Loan ID
+ * @param userId User ID
+ * @returns Promise resolving to array of payments
+ */
+export async function listPayments(app: FastifyInstance, loanId: string, userId: string): Promise<any[]> {
+  // Verify user has access to this loan
+  const loan = await app.db.loan.findUnique({
+    where: {
+      id: loanId
+    }
+  });
+  
+  if (!loan) {
+    throw new Error('Loan not found');
+  }
+  
+  if (loan.lenderId !== userId && loan.borrowerId !== userId) {
+    throw new Error('User does not have access to this loan');
+  }
+  
+  // Get payments for loan
+  const payments = await app.db.payment.findMany({
+    where: {
+      loanId: loanId
+    },
+    orderBy: {
+      paidAt: 'desc'
+    }
+  });
+  
+  return payments;
+}

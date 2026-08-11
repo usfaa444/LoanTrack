@@ -1,0 +1,127 @@
+{
+  "common": {
+    "appName": "Loan Tracker",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "done": "Done",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "warning": "Warning"
+  },
+  "auth": {
+    "phone": {
+      "title": "Phone Number",
+      "placeholder": "Enter your number",
+      "continue": "Continue",
+      "validation": "Please enter a valid phone number"
+    },
+    "otp": {
+      "title": "Verification",
+      "instruction": "Enter the code sent to {{phone}}",
+      "placeholder": "6-digit code",
+      "resend": "Resend code",
+      "resendIn": "Resend in {{time}}s",
+      "verify": "Verify"
+    },
+    "pin": {
+      "setup": {
+        "title": "Set PIN Code",
+        "instruction": "Create a PIN code to secure your account",
+        "confirm": "Confirm your PIN code"
+      },
+      "login": {
+        "title": "Enter your PIN",
+        "forgot": "Forgot PIN?"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "name": "Full Name",
+      "namePlaceholder": "Enter your name",
+      "currency": "Default Currency",
+      "avatar": "Profile Photo"
+    }
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "loans": "Loans",
+    "activity": "Activity",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "activeLoans": "Active Loans",
+    "totalOutstanding": "Total Outstanding",
+    "totalPaid": "Total Paid",
+    "nextDue": "Next Due",
+    "quickActions": "Quick Actions",
+    "addLoan": "Add Loan"
+  },
+  "loans": {
+    "title": "Loans",
+    "new": "New Loan",
+    "empty": "No loans yet",
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "form": {
+      "borrower": "Borrower Phone",
+      "amount": "Amount (XOF)",
+      "purpose": "Purpose",
+      "dueDate": "Due Date",
+      "submit": "Create Loan"
+    },
+    "detail": {
+      "status": "Status",
+      "amount": "Amount",
+      "remaining": "Remaining",
+      "payments": "Payments",
+      "addPayment": "Add Payment"
+    },
+    "payment": {
+      "title": "Record Payment",
+      "amount": "Amount",
+      "method": "Method",
+      "note": "Note",
+      "submit": "Record Payment"
+    }
+  },
+  "activity": {
+    "title": "Activity",
+    "payments": "Recent Payments",
+    "reminders": "Reminders",
+    "notifications": "Notifications"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "currency": "Currency",
+    "language": "Language",
+    "notifications": "Notifications",
+    "security": "Security",
+    "logout": "Logout"
+  },
+  "components": {
+    "pinPad": {
+      "enterPin": "Enter your PIN",
+      "forgotPin": "Forgot PIN?"
+    },
+    "statusBadge": {
+      "active": "Active",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "emptyState": {
+      "noData": "No data",
+      "tryAgain": "Please try again later"
+    }
+  }
+}

@@ -10,10 +10,7 @@
     "clean": "turbo run clean",
     "format": "prettier --write .",
     "db:generate": "turbo run db:generate",
-    "db:migrate": "turbo run db:migrate",
-    "db:reset": "turbo run db:reset",
-    "db:studio": "turbo run db:studio",
-    "postinstall": "pnpm run db:generate"
+    "postinstall": "cd packages/database && npx prisma generate"
   },
   "devDependencies": {
     "prettier": "^3.2.5",

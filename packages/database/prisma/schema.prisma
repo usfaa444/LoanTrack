@@ -3,18 +3,12 @@
 // ============================================================================
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
-}
-
-generator zod {
-  provider = "prisma-generator-zod"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  extensions = [pgcrypto, citext]
 }
 
 // ============================================================================
@@ -163,8 +157,9 @@ model User {
   giftsGiven         Gift[]          @relation("GiftsGiven")
   giftsReceived      Gift[]          @relation("GiftsReceived")
   deviceTokens       DeviceToken[]
-  notificationLogs   NotificationLog[]
-  reminderLogs       ReminderLog[]
+  notificationLogs     NotificationLog[]
+  reminderLogs         ReminderLog[]
+  streakMilestones     StreakMilestone[]
   paymentConfirmations PaymentConfirmation[]
 
   @@index([phoneHash])
@@ -270,7 +265,7 @@ model ReminderStage {
   level            Int
   delayDays        Int             // negative = before due date, positive = after
   tone             ReminderTone
-  template         String          @db.Text
+  messageTemplate  String          @db.Text
   channel          ReminderChannel
   includeMeme      Boolean         @default(false)
 
@@ -284,6 +279,7 @@ model ReminderStage {
 model ReminderLog {
   id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   loanId       String           @db.Uuid
+  sentById     String           @db.Uuid
   stage        Int
   channel      ReminderChannel
   sentAt       DateTime         @default(now())
@@ -291,7 +287,8 @@ model ReminderLog {
   failureReason String?         @db.VarChar(500)
 
   // Relations
-  loan Loan @relation(fields: [loanId], references: [id])
+  loan   Loan @relation(fields: [loanId], references: [id])
+  sentBy User @relation(fields: [sentById], references: [id])
 
   @@index([loanId])
   @@index([sentAt])
@@ -368,7 +365,8 @@ model DigitalIOU {
   updatedAt       DateTime   @updatedAt
 
   // Relations
-  loan Loan @relation(fields: [loanId], references: [id])
+  loan    Loan       @relation(fields: [loanId], references: [id])
+  parties IOUParty[]
 
   @@map("digital_ious")
 }
