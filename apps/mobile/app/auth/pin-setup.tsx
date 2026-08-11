@@ -75,7 +75,7 @@ export default function PinSetupScreen() {
         onPinEnter={handlePinEntered}
         onBack={handleBack}
         loading={loading}
-        length={4} / 4-digit PIN
+        length={4} // 4-digit PIN
       />
     </View>
   );
