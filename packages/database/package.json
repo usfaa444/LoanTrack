@@ -1,0 +1,22 @@
+{
+  "name": "@loantrack/database",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "@loantrack/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "^5.18.0",
+    "typescript": "^5.5.4"
+  }
+}
