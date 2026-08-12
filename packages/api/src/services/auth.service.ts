@@ -1,42 +1,31 @@
 import { PrismaClient } from '@prisma/client';
 import { hashPhone, hashPin, verifyPin } from '../lib/crypto';
-import { verifyIdToken } from '../lib/firebase';
+import { createHash } from 'crypto';
 
-export async function registerOrUpsertUser(
-  db: PrismaClient,
-  uid: string,
-  phone: string,
-  displayName?: string,
+function hashEmail(email: string): string {
+  return createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
+}
+
+export async function upsertUserByPhone(
+  db: PrismaClient, phone: string, displayName?: string
 ) {
   const phoneHash = hashPhone(phone);
   return db.user.upsert({
     where: { phoneHash },
-    update: {
-      phoneHash,
-      displayName: displayName || undefined,
-      updatedAt: new Date(),
-    },
-    create: {
-      phone,
-      phoneHash,
-      displayName,
-      defaultCurrency: 'XOF',
-      isTrustScorePublic: false,
-      hasPinSet: false,
-    },
+    update: { displayName, updatedAt: new Date() },
+    create: { phone, phoneHash, displayName, defaultCurrency: 'XOF', hasPinSet: false, isTrustScorePublic: false },
   });
 }
 
-export async function verifyFirebaseAndUpsert(
-  db: PrismaClient,
-  idToken: string
+export async function upsertUserByEmail(
+  db: PrismaClient, email: string, displayName?: string
 ) {
-  const decoded = await verifyIdToken(idToken);
-  if (!decoded) return null;
-  const phone = (decoded as any).phone || (decoded as any).phone_number || '';
-  const uid = (decoded as any).uid || (decoded as any).sub || '';
-  if (!phone || !uid) return null;
-  return registerOrUpsertUser(db, uid, phone, (decoded as any).name || (decoded as any).display_name);
+  const emailHash = hashEmail(email);
+  return db.user.upsert({
+    where: { emailHash },
+    update: { displayName, updatedAt: new Date() },
+    create: { email, emailHash, phone: '', phoneHash: '', displayName, defaultCurrency: 'XOF', hasPinSet: false, isTrustScorePublic: false },
+  });
 }
 
 export async function setupPin(db: PrismaClient, userId: string, pin: string): Promise<boolean> {
@@ -64,4 +53,12 @@ export async function verifyPinService(db: PrismaClient, userId: string, pin: st
     }
     return valid;
   } catch { return false; }
+}
+
+export async function getUserByPhone(db: PrismaClient, phone: string) {
+  return db.user.findUnique({ where: { phoneHash: hashPhone(phone) } });
+}
+
+export async function getUserByEmail(db: PrismaClient, email: string) {
+  return db.user.findUnique({ where: { emailHash: hashEmail(email) } });
 }

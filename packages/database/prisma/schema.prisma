@@ -132,6 +132,8 @@ model User {
   id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   phone             String    @unique @db.VarChar(100)
   phoneHash         String    @unique @db.VarChar(64) // SHA-256 hash for contact lookup
+  email             String?   @unique @db.VarChar(255)
+  emailHash         String?   @unique @db.VarChar(64)
   displayName       String?   @db.VarChar(100)
   avatarUrl         String?   @db.VarChar(500)
   defaultCurrency   String    @default("USD") @db.VarChar(3)
@@ -163,6 +165,7 @@ model User {
   paymentConfirmations PaymentConfirmation[]
 
   @@index([phoneHash])
+  @@index([emailHash])
   @@index([createdAt])
   @@map("users")
 }
