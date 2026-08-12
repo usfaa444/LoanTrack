@@ -6,7 +6,7 @@ export default function Index() {
   const hasPin = useAuthStore((state) => state.pinToken);
 
   if (!isAuthenticated) {
-    return <Redirect href="/auth/phone" />;
+    return <Redirect href="/auth" />;
   }
 
   if (!hasPin) {
