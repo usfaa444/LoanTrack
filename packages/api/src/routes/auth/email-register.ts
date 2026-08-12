@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { createUser, signInWithEmail } from '../../lib/firebase';
+import { hashPhone } from '../../lib/crypto';
 import { emailRegisterJsonSchema, emailLoginJsonSchema } from '../../schemas/auth.schema';
 
 export default async function routes(fastify: FastifyInstance) {
@@ -9,10 +10,11 @@ export default async function routes(fastify: FastifyInstance) {
     const { email, password, displayName } = request.body as any;
     try {
       const userRecord = await createUser(email, password, displayName);
+      const emailHash = hashPhone(email);
       await fastify.db.user.upsert({
-        where: { phoneHash: email },
+        where: { phoneHash: emailHash },
         update: { displayName, updatedAt: new Date() },
-        create: { phone: email, phoneHash: email, displayName, defaultCurrency: 'XOF', hasPinSet: false, isTrustScorePublic: false },
+        create: { phone: email, phoneHash: emailHash, displayName, defaultCurrency: 'XOF', hasPinSet: false, isTrustScorePublic: false },
       });
       const token = fastify.jwt.sign({ id: userRecord.uid, email });
       return reply.status(201).send({ success: true, token, user: { id: userRecord.uid, email, displayName } });
