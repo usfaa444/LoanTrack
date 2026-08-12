@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
-import PinPad from '../../src/components/PinPad';
-import { api } from '../../src/lib/api';
 import { useTranslation } from 'react-i18next';
 import { theme } from '../../src/theme';
+import PinPad from '../../src/components/PinPad';
 import { MaterialIcons } from '@expo/vector-icons';
+
+const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
 
 export default function PinSetupScreen() {
   const [pin, setPin] = useState('');
@@ -16,101 +17,58 @@ export default function PinSetupScreen() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const handlePinEntered = async (enteredPin: string) => {
+  const handlePinEntered = (enteredPin: string) => {
     if (step === 'create') {
       setPin(enteredPin);
       setStep('confirm');
     } else {
       if (enteredPin === pin) {
-        // Save PIN
-        await savePin(enteredPin);
+        savePin(enteredPin);
       } else {
-        Alert.alert(t('common.error'), t('auth.pin.setup.confirm'));
-        setStep('create');
+        Alert.alert('Error', 'PINs do not match');
         setPin('');
         setConfirmPin('');
+        setStep('create');
       }
     }
   };
 
-  const savePin = async (pin: string) => {
+  const savePin = async (pinValue: string) => {
     setLoading(true);
     try {
-      const response: any = await api.post('/auth/set-pin', { pin });
-      
-      if (response.data.pinToken) {
-        useAuthStore.getState().setPinToken(response.data.pinToken);
+      const res = await fetch(`${API_URL}/v1/auth/pin/setup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${useAuthStore.getState().token}` },
+        body: JSON.stringify({ pin: pinValue }),
+      });
+      const data = await res.json();
+      if (data.success) {
         router.push('/auth/profile-setup');
       } else {
-        Alert.alert(t('common.error'), response.message || t('common.error'));
+        Alert.alert('Error', data.error || 'Failed to set PIN');
       }
-    } catch (error: any) {
-      Alert.alert(t('common.error'), error.message || t('common.error'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleBack = () => {
-    if (step === 'confirm') {
-      setStep('create');
-      setPin('');
-    } else {
-      router.back();
-    }
+    } catch {
+      Alert.alert('Error', 'Network error');
+    } finally { setLoading(false); }
   };
 
   return (
     <View style={styles.container}>
-      <MaterialIcons 
-        name="lock" 
-        size={64} 
-        color={theme.colors.primary} 
-        style={styles.icon} 
-      />
+      <MaterialIcons name="lock" size={64} color={theme.colors.primary} style={styles.icon} />
       <Text style={styles.title}>
-        {step === 'create' 
-          ? t('auth.pin.setup.title') 
-          : t('auth.pin.setup.confirm')}
+        {step === 'create' ? 'Create PIN' : 'Confirm PIN'}
       </Text>
       <Text style={styles.subtitle}>
-        {step === 'create' 
-          ? t('auth.pin.setup.instruction') 
-          : t('auth.pin.setup.confirm')}
+        {step === 'create' ? 'Enter a 4-digit PIN' : 'Re-enter your PIN'}
       </Text>
-      
-      <PinPad
-        onPinEnter={handlePinEntered}
-        onBack={handleBack}
-        loading={loading}
-        length={4} // 4-digit PIN
-      />
+      <PinPad onPinEnter={handlePinEntered} loading={loading} length={4} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: theme.spacing.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  icon: {
-    marginBottom: theme.spacing.xxl,
-  },
-  title: {
-    fontSize: theme.fontSize.xxxl,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: theme.fontSize.lg,
-    textAlign: 'center',
-    marginBottom: theme.spacing.huge,
-    color: theme.colors.textSecondary,
-  },
+  container: { flex: 1, backgroundColor: theme.colors.surface, paddingHorizontal: theme.spacing.xl, justifyContent: 'center', alignItems: 'center' },
+  icon: { marginBottom: theme.spacing.xxl },
+  title: { fontSize: 30, fontWeight: 'bold', textAlign: 'center', marginBottom: 8, color: theme.colors.text },
+  subtitle: { fontSize: 17, textAlign: 'center', marginBottom: 40, color: theme.colors.textSecondary },
 });
