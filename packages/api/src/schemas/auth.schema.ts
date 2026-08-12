@@ -81,6 +81,22 @@ export const firebaseTokenJsonSchema = {
   },
 };
 
+export const emailLoginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+export const emailLoginJsonSchema = {
+  type: 'object' as const,
+  required: ['email', 'password'],
+  properties: {
+    email: { type: 'string', format: 'email' },
+    password: { type: 'string', minLength: 6 },
+  },
+};
+
+export type EmailLoginRequest = z.infer<typeof emailLoginSchema>;
+
 export type OtpSendRequest = z.infer<typeof otpSendSchema>;
 export type OtpVerifyRequest = z.infer<typeof otpVerifySchema>;
 export type PinSetupRequest = z.infer<typeof pinSetupSchema>;
