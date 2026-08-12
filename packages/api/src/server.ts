@@ -6,9 +6,11 @@ import prismaPlugin from './plugins/prisma';
 import authPlugin from './plugins/auth';
 import errorHandlerPlugin from './plugins/error-handler';
 
-// Auth routes
-import otpSendRoutes from './routes/auth/otp-send';
-import otpVerifyRoutes from './routes/auth/otp-verify';
+// Firebase auth routes
+import emailRegisterRoutes from './routes/auth/email-register';
+import firebaseTokenRoutes from './routes/auth/firebase-token';
+import phoneSendRoutes from './routes/auth/phone-send';
+import phoneVerifyRoutes from './routes/auth/phone-verify';
 import pinSetupRoutes from './routes/auth/pin-setup';
 import pinVerifyRoutes from './routes/auth/pin-verify';
 // Core routes
@@ -32,8 +34,10 @@ async function buildApp() {
     catch { return { status: 'ok', db: 'disconnected' }; }
   });
 
-  await app.register(otpSendRoutes, { prefix: '/v1/auth' });
-  await app.register(otpVerifyRoutes, { prefix: '/v1/auth' });
+  await app.register(emailRegisterRoutes, { prefix: '/v1/auth' });
+  await app.register(firebaseTokenRoutes, { prefix: '/v1/auth' });
+  await app.register(phoneSendRoutes, { prefix: '/v1/auth' });
+  await app.register(phoneVerifyRoutes, { prefix: '/v1/auth' });
   await app.register(pinSetupRoutes, { prefix: '/v1/auth' });
   await app.register(pinVerifyRoutes, { prefix: '/v1/auth' });
   await app.register(loansRoutes, { prefix: '/v1/loans' });

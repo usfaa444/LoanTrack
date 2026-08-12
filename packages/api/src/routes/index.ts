@@ -1,8 +1,10 @@
 import { FastifyInstance } from 'fastify';
 
 // Import route modules
-import authOtpSendRoutes from './auth/otp-send';
-import authOtpVerifyRoutes from './auth/otp-verify';
+import authEmailRegisterRoutes from './auth/email-register';
+import authFirebaseTokenRoutes from './auth/firebase-token';
+import authPhoneSendRoutes from './auth/phone-send';
+import authPhoneVerifyRoutes from './auth/phone-verify';
 import authPinSetupRoutes from './auth/pin-setup';
 import authPinVerifyRoutes from './auth/pin-verify';
 import loansRoutes from './loans';
@@ -31,8 +33,10 @@ export default async function routes(app: FastifyInstance) {
   });
   
   // Register auth routes
-  await app.register(authOtpSendRoutes, { prefix: '/v1/auth' });
-  await app.register(authOtpVerifyRoutes, { prefix: '/v1/auth' });
+  await app.register(authEmailRegisterRoutes, { prefix: '/v1/auth' });
+  await app.register(authFirebaseTokenRoutes, { prefix: '/v1/auth' });
+  await app.register(authPhoneSendRoutes, { prefix: '/v1/auth' });
+  await app.register(authPhoneVerifyRoutes, { prefix: '/v1/auth' });
   await app.register(authPinSetupRoutes, { prefix: '/v1/auth' });
   await app.register(authPinVerifyRoutes, { prefix: '/v1/auth' });
   

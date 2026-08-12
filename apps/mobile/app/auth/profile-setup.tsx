@@ -23,11 +23,11 @@ export default function ProfileSetupScreen() {
     }
     setLoading(true);
     try {
-      const response = await api.post('/v1/auth/profile', {
+      const response: any = await api.post('/v1/auth/profile', {
         displayName: name,
         defaultCurrency: country.currency,
       });
-      if (response.success) {
+      if (response.data.success) {
         setAuthenticated(true);
         router.replace('/(tabs)/dashboard');
       }

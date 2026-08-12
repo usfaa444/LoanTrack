@@ -36,7 +36,7 @@ export default function PinSetupScreen() {
   const savePin = async (pin: string) => {
     setLoading(true);
     try {
-      const response = await api.post('/auth/set-pin', { pin });
+      const response: any = await api.post('/auth/set-pin', { pin });
       
       if (response.data.pinToken) {
         useAuthStore.getState().setPinToken(response.data.pinToken);

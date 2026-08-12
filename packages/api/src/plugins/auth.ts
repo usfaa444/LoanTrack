@@ -18,8 +18,7 @@ export default fp(async (app) => {
       
       // Attach user info to request
       request.user = {
-        id: claims.userId,
-        phone: claims.phone
+        id: claims.userId
       };
     } catch (err) {
       reply.status(401).send({
@@ -38,7 +37,6 @@ declare module 'fastify' {
   interface FastifyRequest {
     user: {
       id: string;
-      phone: string;
     } | null;
   }
 }

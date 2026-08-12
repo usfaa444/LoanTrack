@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   SafeAreaView, KeyboardAvoidingView, Platform, Modal, FlatList, Alert,
@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 import { useCountryStore } from '../../src/stores/countryStore';
 import { countries } from '../../src/data/countries';
 import { theme } from '../../src/theme';
+import { auth, signInWithPhoneNumber, RecaptchaVerifier } from '../../src/lib/firebase';
+import { useAuthStore } from '../../src/stores/authStore';
 
 const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
 
@@ -16,9 +18,27 @@ export default function PhoneScreen() {
   const [phone, setPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const { selected, setCountry } = useCountryStore();
   const router = useRouter();
   const { t } = useTranslation();
+  const recaptchaVerifier = useRef<any>(null);
+
+  useEffect(() => {
+    // Initialize reCAPTCHA verifier for web
+    if (Platform.OS === 'web') {
+      recaptchaVerifier.current = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+      });
+    }
+    
+    return () => {
+      // Clean up reCAPTCHA verifier
+      if (recaptchaVerifier.current) {
+        recaptchaVerifier.current.clear();
+      }
+    };
+  }, []);
 
   const handleSendOtp = async () => {
     const fullPhone = selected.phonePrefix + phone.replace(/\s/g, '');
@@ -26,21 +46,28 @@ export default function PhoneScreen() {
       Alert.alert('Invalid', 'Please enter a valid phone number');
       return;
     }
+    
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/v1/auth/otp/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: fullPhone }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        router.push({ pathname: '/auth/otp', params: { phone: fullPhone } });
-      } else {
-        Alert.alert('Error', data.error || 'Failed to send OTP. Check your Supabase configuration.');
+      // For mobile platforms, we'll use the invisible reCAPTCHA
+      // For web, we'll use the reCAPTCHA verifier we created
+      let verifier;
+      if (Platform.OS === 'web' && recaptchaVerifier.current) {
+        verifier = recaptchaVerifier.current;
+      } else if (Platform.OS !== 'web') {
+        // On mobile, Firebase handles reCAPTCHA automatically
+        verifier = undefined;
       }
-    } catch {
-      Alert.alert('Network Error', 'Could not reach server. Check your connection and API URL.');
+      
+      // Send OTP via Firebase
+      const result = await signInWithPhoneNumber(auth, fullPhone, verifier);
+      setConfirmationResult(result);
+      
+      // Navigate to OTP verification screen
+      router.push({ pathname: '/auth/otp', params: { phone: fullPhone } });
+    } catch (error: any) {
+      console.error('Phone auth error:', error);
+      Alert.alert('Error', error.message || 'Failed to send OTP');
     } finally {
       setLoading(false);
     }
@@ -127,6 +154,9 @@ export default function PhoneScreen() {
               </View>
             </View>
           </Modal>
+          
+          {/* reCAPTCHA container (for web) */}
+          <View id="recaptcha-container" />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

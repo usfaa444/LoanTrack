@@ -1,20 +1,18 @@
-# Dockerfile for LoanTrack API
-FROM node:18-alpine
+FROM node:22-alpine
 
-RUN apk add --no-cache openssl && npm install -g pnpm
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy workspace files (needed for pnpm to resolve)
-COPY package.json pnpm-workspace.yaml ./
-COPY packages/api ./packages/api
-COPY packages/database ./packages/database
-COPY packages/shared ./packages/shared
-COPY tsconfig.base.json ./
+COPY packages/api/package.json packages/api/tsconfig.json ./packages/api/
+COPY packages/database/prisma ./packages/database/prisma
 
-# Install with no lockfile (it will generate one from package.json)
-RUN pnpm install --no-frozen-lockfile
+RUN cd packages/api && npm install --legacy-peer-deps
+
+COPY packages/api/src ./packages/api/src
+
+RUN cd packages/api && node_modules/.bin/prisma generate --schema=../database/prisma/schema.prisma
 
 EXPOSE 3001
 
-CMD ["pnpm", "--filter", "@loantrack/api", "dev"]
+CMD ["packages/api/node_modules/.bin/tsx", "watch", "packages/api/src/server.ts"]

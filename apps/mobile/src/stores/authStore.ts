@@ -2,10 +2,18 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import * as SecureStore from 'expo-secure-store';
 
+// Create a compatible storage object
+const storage = {
+  getItem: SecureStore.getItemAsync,
+  setItem: SecureStore.setItemAsync,
+  removeItem: SecureStore.deleteItemAsync,
+};
+
 interface User {
   id: string;
   name: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   avatar?: string;
   currency: string;
 }
@@ -35,7 +43,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => SecureStore),
+      storage: createJSONStorage(() => storage),
     }
   )
 );

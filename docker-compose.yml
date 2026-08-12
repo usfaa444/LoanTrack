@@ -46,8 +46,9 @@ services:
       - NODE_ENV=development
       - JWT_SECRET=dev-secret-change-in-production-abc123def456
       - ENCRYPTION_KEY=12345678901234567890123456789012
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY}
     depends_on:
       postgres:
         condition: service_healthy
