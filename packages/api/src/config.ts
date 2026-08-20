@@ -12,6 +12,9 @@ const configSchema = z.object({
   firebasePrivateKey: z.string(),
   firebaseStorageBucket: z.string().optional(),
   nodeEnv: z.enum(['development', 'production', 'test']).default('development'),
+  signingSecret: z.string().default('dev-signing-secret'),
+  whatsappVerifyToken: z.string().optional(),
+  cronSecret: z.string().optional(),
 });
 
 function getConfig() {
@@ -27,6 +30,9 @@ function getConfig() {
     firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY!,
     firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
     nodeEnv: process.env.NODE_ENV || 'development',
+    signingSecret: process.env.SIGNING_SECRET || 'dev-signing-secret',
+    whatsappVerifyToken: process.env.WHATSAPP_VERIFY_TOKEN,
+    cronSecret: process.env.CRON_SECRET,
   };
 
   try {

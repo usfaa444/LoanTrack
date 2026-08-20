@@ -20,6 +20,22 @@ import dashboardRoutes from './routes/dashboard';
 import notificationsRoutes from './routes/notifications';
 import devicesRoutes from './routes/devices';
 
+// NEW: Data-collection routes
+import analyticsRoutes from './routes/analytics';
+import disputesRoutes from './routes/disputes';
+import scoreRoutes from './routes/score';
+import badgesRoutes from './routes/badges';
+import streaksRoutes from './routes/streaks';
+import usersRoutes from './routes/users';
+
+// NEW: Feature routes (Souga-derived)
+import loanMemosRoutes from './routes/loans/memos';
+import paymentCorrectionsRoutes from './routes/payments';
+import loanReceiptsRoutes from './routes/loans/receipts';
+import tontineRoutes from './routes/tontines';
+import whatsappWebhookRoutes from './routes/webhooks/whatsapp';
+import remindersRoutes from './routes/reminders';
+
 const app = fastify({ logger: true });
 
 async function buildApp() {
@@ -45,6 +61,22 @@ async function buildApp() {
   await app.register(dashboardRoutes, { prefix: '/v1/dashboard' });
   await app.register(notificationsRoutes, { prefix: '/v1/notifications' });
   await app.register(devicesRoutes, { prefix: '/v1/devices' });
+
+  // NEW: Data-collection routes
+  await app.register(analyticsRoutes, { prefix: '/v1/analytics' });
+  await app.register(disputesRoutes, { prefix: '/v1/disputes' });
+  await app.register(scoreRoutes, { prefix: '/v1/score' });
+  await app.register(badgesRoutes, { prefix: '/v1/badges' });
+  await app.register(streaksRoutes, { prefix: '/v1/streaks' });
+  await app.register(usersRoutes, { prefix: '/v1/users' });
+
+  // NEW: Feature routes (Souga-derived)
+  await app.register(loanMemosRoutes, { prefix: '/v1/loans' });
+  await app.register(paymentCorrectionsRoutes, { prefix: '/v1/payments' });
+  await app.register(loanReceiptsRoutes, { prefix: '/v1/loans' });
+  await app.register(tontineRoutes, { prefix: '/v1/tontines' });
+  await app.register(whatsappWebhookRoutes, { prefix: '/v1/whatsapp/webhook' });
+  await app.register(remindersRoutes, { prefix: '/v1/reminders' });
 
   return app;
 }

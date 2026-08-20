@@ -21,6 +21,14 @@ import badgesRoutes from './badges';
 import streaksRoutes from './streaks';
 import usersRoutes from './users';
 
+// NEW: Feature routes (Souga-derived)
+import loanMemosRoutes from './loans/memos';
+import paymentsRoutes from './payments';
+import loanReceiptsRoutes from './loans/receipts';
+import tontinesRoutes from './tontines';
+import whatsappRoutes from './webhooks/whatsapp';
+import remindersRoutes from './reminders';
+
 // Register all routes
 export default async function routes(app: FastifyInstance) {
   // Health check
@@ -48,4 +56,12 @@ export default async function routes(app: FastifyInstance) {
   await app.register(badgesRoutes, { prefix: '/v1/badges' });
   await app.register(streaksRoutes, { prefix: '/v1/streaks' });
   await app.register(usersRoutes, { prefix: '/v1/users' });
+
+  // NEW: Feature routes (Souga-derived)
+  await app.register(loanMemosRoutes, { prefix: '/v1/loans' });
+  await app.register(paymentsRoutes, { prefix: '/v1/payments' });
+  await app.register(loanReceiptsRoutes, { prefix: '/v1/loans' });
+  await app.register(tontinesRoutes, { prefix: '/v1/tontines' });
+  await app.register(whatsappRoutes, { prefix: '/v1/whatsapp/webhook' });
+  await app.register(remindersRoutes, { prefix: '/v1/reminders' });
 }
