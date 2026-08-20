@@ -172,7 +172,7 @@ model User {
   badges               UserBadge[]
   tontinesCreated      Tontine[]      @relation("TontineCreator")
   tontineMemberships   TontineMember[] @relation("TontineMembership")
-  whatsappSession      WhatsAppSession? @relation("WhatsAppUser")
+  whatsappSessions     WhatsAppSession[] @relation("WhatsAppUser")
 
   @@index([phoneHash])
   @@index([emailHash])
@@ -243,6 +243,7 @@ model Payment {
   loan       Loan @relation(fields: [loanId], references: [id])
   recordedBy User @relation("RecordedBy", fields: [recordedById], references: [id])
   corrections PaymentCorrection[]
+  confirmations PaymentConfirmation[]
 
   @@index([loanId])
   @@index([paidAt])
