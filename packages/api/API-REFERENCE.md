@@ -270,34 +270,44 @@
 
 ## 🕌 Tontines
 
+Tontines support both registered and unregistered members. The `rotationOrder` accepts phone numbers (e.g. `"+22670000000"`) or objects `{phone, displayName}`. Unregistered users are tracked by phone number only; when they later create an account, their `userId` is automatically linked via `POST /v1/tontines/:id/link`.
+
 ### POST `/v1/tontines`
 - **Auth:** `Bearer <token>`
 - **Body (JSON):**
   - `name` (string, required) — tontine name
   - `contributionAmount` (number, required) — amount per member per cycle
-  - `rotationOrder` (string[], required) — ordered array of member userIds
+  - `rotationOrder` (array, required) — ordered array of `"+226XXXXXXXX"` strings OR `{phone: "+226XXXXXXXX", displayName: "Awa"}` objects. Phone numbers are the canonical identifier.
   - `currency` (string, optional, default "XOF") — 3-letter code
   - `frequency` (string, optional, default "monthly") — weekly, biweekly, monthly
-- **Response 201:** Created Tontine with members
+- **Response 201:** Created Tontine with members. Members with phone numbers matching existing users are auto-linked (`userId` populated).
+- **Response 400:** Missing required fields
 
 ### GET `/v1/tontines`
 - **Auth:** `Bearer <token>`
-- **Response 200:** Array of tontines where user is member or creator, with member details
+- **Response 200:** Array of tontines where user is: creator, linked member (by userId), OR member by phone number match
 
 ### GET `/v1/tontines/:id`
 - **Auth:** `Bearer <token>`
 - **Params:** `id` — tontine UUID
-- **Response 200:** Single tontine with members (sorted by order)
+- **Response 200:** Single tontine with members (sorted by order). Member fields: `id, phone, displayName, userId, registered, hasPaid, order`
 
 ### POST `/v1/tontines/:id/rotate`
 - **Auth:** `Bearer <token>` — creator only
 - **Params:** `id` — tontine UUID
-- **Response 200:** `{ currentIdx, nextHolder: userId }` — marks current member paid, advances rotation
+- **Response 200:** `{ currentIdx, nextHolder: { phone, displayName, userId } }` — marks current member paid, advances rotation
+
+### POST `/v1/tontines/:id/link`
+- **Auth:** `Bearer <token>`
+- **Params:** `id` — tontine UUID
+- **Description:** Links the authenticated user's account to their tontine membership (by matching their `phone` to a membership record). Use this when an unregistered member creates an account.
+- **Response 200:** `{ success, linked: true }` or `{ success, alreadyLinked: true }`
+- **Response 404:** No membership found for this user's phone in this tontine
 
 ### GET `/v1/tontines/:id/status`
 - **Auth:** `Bearer <token>`
 - **Params:** `id` — tontine UUID
-- **Response 200:** `{ currentHolder, nextHolder, members: [{ id, name, hasPaid, order }], cycleComplete }`
+- **Response 200:** `{ currentHolder: {phone, displayName, userId, registered}, nextHolder, members: [{phone, displayName, userId, registered, hasPaid, order}], cycleComplete }`
 
 ---
 

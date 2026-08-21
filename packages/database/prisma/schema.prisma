@@ -610,7 +610,7 @@ model Tontine {
   contributionAmount Decimal @db.Decimal(12, 2)
   currency          String   @default("XOF") @db.VarChar(3)
   frequency         String   @default("monthly") @db.VarChar(20)
-  rotationOrder     String[] // userIds in order
+  rotationOrder     String[] // phone numbers in order (canonical identifier)
   currentIdx        Int      @default(0)
   createdBy         String   @db.Uuid
   isActive          Boolean  @default(true)
@@ -623,16 +623,18 @@ model Tontine {
 }
 
 model TontineMember {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tontineId String   @db.Uuid
-  userId    String   @db.Uuid
-  order     Int
-  hasPaid   Boolean  @default(false)
-  paidAt    DateTime?
-  joinedAt  DateTime @default(now())
-  tontine   Tontine  @relation(fields: [tontineId], references: [id])
-  user      User     @relation("TontineMembership", fields: [userId], references: [id])
-  @@unique([tontineId, userId])
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tontineId   String   @db.Uuid
+  userId      String?  @db.Uuid
+  phone       String   @db.VarChar(20)
+  displayName String?  @db.VarChar(100)
+  order       Int
+  hasPaid     Boolean  @default(false)
+  paidAt      DateTime?
+  joinedAt    DateTime @default(now())
+  tontine     Tontine  @relation(fields: [tontineId], references: [id])
+  user        User?    @relation("TontineMembership", fields: [userId], references: [id])
+  @@unique([tontineId, phone])
   @@index([tontineId])
   @@map("tontine_members")
 }
